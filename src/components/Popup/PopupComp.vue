@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-09-25 10:03:47
  * @LastEditors: dys
- * @LastEditTime: 2025-12-16 13:50:03
+ * @LastEditTime: 2025-12-16 14:32:56
  * @Descripttion: 网格弹框
 -->
 <template>
@@ -130,12 +130,10 @@ const handleClose = () => {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  text-align: left;
 }
 
 /* 头部样式 */
-.header {
-  margin-bottom: 4px;
-}
 .close {
   position: absolute;
   top: 6px;
@@ -172,8 +170,8 @@ const handleClose = () => {
 }
 
 .grid-item {
-  width: 155px;
-  height: 50px;
+  width: 130px;
+  height: 40px;
   flex-shrink: 0;
   background: rgba(251, 251, 251, 0.1);
   border-radius: 4px;
@@ -207,8 +205,8 @@ const handleClose = () => {
 /* 三列信息样式 */
 .three-columns {
   display: flex;
-  width: 312px;
-  height: 72px;
+  width: 286px;
+  height: 65px;
   padding: 0 12px;
   justify-content: center;
   align-items: flex-start;
@@ -250,8 +248,7 @@ const handleClose = () => {
 .bottom-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  width: 312px;
+  width: 286px;
 }
 
 .info-item {

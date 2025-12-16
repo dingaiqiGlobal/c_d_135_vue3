@@ -29,7 +29,7 @@ const list = ref([
   },
   {
     id: 3,
-    img: '/images/nav/DrawEdit.jpg',
+    img: '/images/nav/Popup.jpg',
     text: '组件弹框',
     path: '/Popup',
   },

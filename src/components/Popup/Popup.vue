@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-16 09:51:31
  * @LastEditors: dys
- * @LastEditTime: 2025-12-16 11:39:26
+ * @LastEditTime: 2025-12-16 14:40:44
  * @Descripttion: 
 -->
 <template>
@@ -18,7 +18,7 @@ import { PopupVue } from './js/PopupVue'
 import PopupComp from './PopupComp.vue'
 
 let viewer = ref(null)
-let popup = ref(null)
+let popup = null
 
 const addEntity = () => {
   viewer.value.entities.add({
@@ -50,11 +50,14 @@ onMounted(() => {
       viewer.value.scene.globe.ellipsoid,
     )
     if (!Cesium.defined(picked)) {
-      if (popup.value) {
-        popup.value.remove()
+      if (popup) {
+        popup.remove()
       }
     }
     if (Cesium.defined(picked)) {
+      if (popup) {
+        popup.remove()
+      }
       if (picked.id && picked.id instanceof Cesium.Entity) {
         const options = {
           component: PopupComp,
@@ -65,7 +68,7 @@ onMounted(() => {
               safetyIndex: '高',
               time: '12:00-13:00',
               occupancy: '无',
-              gridType: '适飞区',
+              gridType: '禁飞区',
               windSpeed: '4',
               weatherQuality: '多云',
               visibility: '5',
@@ -73,11 +76,11 @@ onMounted(() => {
               cns: 'cns',
             },
             close: () => {
-              popup.value.remove()
+              popup.remove()
             },
           },
         }
-        popup.value = new PopupVue(viewer.value, options)
+        popup = new PopupVue(viewer.value, options)
       }
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
