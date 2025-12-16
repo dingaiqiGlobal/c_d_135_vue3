@@ -1,3 +1,10 @@
+/*
+ * @Author: dys
+ * @Date: 2025-12-16 09:51:52
+ * @LastEditors: dys
+ * @LastEditTime: 2025-12-16 10:12:23
+ * @Descripttion:
+ */
 import { h, render } from 'vue'
 import { Popup } from './Popup'
 
@@ -17,8 +24,7 @@ export class PopupVue {
     div.className = 'popup'
 
     this.element = div
-    if (component)
-      render(h(component, props), div)
+    if (component) render(h(component, props), div)
     this.viewer.container.appendChild(div)
 
     this.popup = new Popup(this.viewer, {
@@ -29,8 +35,7 @@ export class PopupVue {
   }
 
   remove() {
-    if (this.element)
-      this.viewer.container.removeChild(this.element)
+    if (this.element) this.viewer.container.removeChild(this.element)
     this.popup?.destory()
     this.element = null
   }

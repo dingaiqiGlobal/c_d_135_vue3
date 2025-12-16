@@ -2,13 +2,12 @@
  * @Author: dys
  * @Date: 2025-12-09 10:02:49
  * @LastEditors: dys
- * @LastEditTime: 2025-12-16 09:53:40
+ * @LastEditTime: 2025-12-16 11:19:20
  * @Descripttion: 
 -->
 <template>
   <div>
     <div id="cesiumContainer"></div>
-    <Panel />
   </div>
 </template>
 <script setup>

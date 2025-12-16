@@ -1,4 +1,13 @@
-import { Cartesian2, Cartographic, Cesium3DTileFeature, Cesium3DTileset, Math as CesiumMath, EllipsoidTerrainProvider, Model, SceneTransforms } from 'cesium'
+import {
+  Cartesian2,
+  Cartographic,
+  Cesium3DTileFeature,
+  Cesium3DTileset,
+  Math as CesiumMath,
+  EllipsoidTerrainProvider,
+  Model,
+  SceneTransforms,
+} from 'cesium'
 
 export class Coord {
   viewer
@@ -16,18 +25,16 @@ export class Coord {
         // 为了防止别人用了Array.prototype扩展后出现bug
         if (!Number.isNaN(Number(i))) {
           const pick = picks[i]
-          isOn3dtiles
-            = (pick && pick.primitive instanceof Cesium3DTileFeature)
-            || (pick && pick.primitive instanceof Cesium3DTileset)
-            || (pick && pick.primitive instanceof Model)
+          isOn3dtiles =
+            (pick && pick.primitive instanceof Cesium3DTileFeature) ||
+            (pick && pick.primitive instanceof Cesium3DTileset) ||
+            (pick && pick.primitive instanceof Model)
           if (isOn3dtiles) {
             viewer.scene.pick(position)
             cartesian3 = viewer.scene.pickPosition(position)
             if (cartesian3) {
-              const cartographic
-                = Cartographic.fromCartesian(cartesian3)
-              if (cartographic.height < 0)
-                cartographic.height = 0
+              const cartographic = Cartographic.fromCartesian(cartesian3)
+              if (cartographic.height < 0) cartographic.height = 0
               const lon = CesiumMath.toDegrees(cartographic.longitude)
               const lat = CesiumMath.toDegrees(cartographic.latitude)
               const height = cartographic.height
@@ -44,24 +51,15 @@ export class Coord {
         if (!isTerrain) {
           // 无地形
           const ray = viewer.scene.camera.getPickRay(position)
-          if (!ray)
-            return null
+          if (!ray) return null
           cartesian3 = viewer.scene.globe.pick(ray, viewer.scene)
           return cartesian3
-        }
-        else {
-          cartesian3 = viewer.scene.camera.pickEllipsoid(
-            position,
-            viewer.scene.globe.ellipsoid,
-          )
+        } else {
+          cartesian3 = viewer.scene.camera.pickEllipsoid(position, viewer.scene.globe.ellipsoid)
           if (cartesian3) {
             const position = this.cartesian3ToLngLat(cartesian3)
             if (position && position.height < 0) {
-              cartesian3 = this.lnglatToCartesian3(
-                position.longitude,
-                position.latitude,
-                0.1,
-              )
+              cartesian3 = this.lnglatToCartesian3(position.longitude, position.latitude, 0.1)
             }
             return cartesian3
           }
@@ -78,10 +76,12 @@ export class Coord {
   }
 
   cartesian3ToCartesian2(cartesian3) {
-    return SceneTransforms.wgs84ToWindowCoordinates(
-      this.viewer.scene,
-      cartesian3,
-    )
+    return this.viewer.scene.cartesianToCanvasCoordinates(cartesian3)
+    //废弃
+    // return SceneTransforms.wgs84ToWindowCoordinates(
+    //   this.viewer.scene,
+    //   cartesian3,
+    // )
   }
 
   computeViewerBounds() {
@@ -96,8 +96,7 @@ export class Coord {
         const d3 = camera.pickEllipsoid(d2, ellipsoid)
         if (d3) {
           // 3D世界坐标转弧度
-          const upperLeftCartographic
-                = scene.globe.ellipsoid.cartesianToCartographic(d3)
+          const upperLeftCartographic = scene.globe.ellipsoid.cartesianToCartographic(d3)
           // 弧度转经纬度
           const lon = CesiumMath.toDegrees(upperLeftCartographic.longitude)
           const lat = CesiumMath.toDegrees(upperLeftCartographic.latitude)
@@ -106,16 +105,12 @@ export class Coord {
       }
       const canvas = this.scene.canvas
       const upperLeftLonLat = coordToLonlat(this, 0, 0)
-      const lowerRightLonLat = coordToLonlat(
-        this,
-        canvas.clientWidth,
-        canvas.clientHeight,
-      )
+      const lowerRightLonLat = coordToLonlat(this, canvas.clientWidth, canvas.clientHeight)
       if (
-        upperLeftLonLat?.lon
-            && upperLeftLonLat?.lat
-            && lowerRightLonLat?.lon
-            && lowerRightLonLat?.lat
+        upperLeftLonLat?.lon &&
+        upperLeftLonLat?.lat &&
+        lowerRightLonLat?.lon &&
+        lowerRightLonLat?.lat
       ) {
         bounds = [
           upperLeftLonLat.lon,
@@ -124,8 +119,7 @@ export class Coord {
           lowerRightLonLat.lat,
         ]
       }
-    }
-    else {
+    } else {
       // 三维视图
       bounds = [
         CesiumMath.toDegrees(extend.west),
@@ -145,12 +139,7 @@ export class Coord {
       if (lnglat) {
         const lng = lnglat.longitude
         const lat = lnglat.latitude
-        if (
-          lng >= bounds[0]
-              && lng <= bounds[2]
-              && lat >= bounds[1]
-              && lat <= bounds[3]
-        )
+        if (lng >= bounds[0] && lng <= bounds[2] && lat >= bounds[1] && lat <= bounds[3])
           visible = true
       }
     }

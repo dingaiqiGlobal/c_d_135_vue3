@@ -27,6 +27,12 @@ const list = ref([
     text: '绘制编辑',
     path: '/DrawEdit',
   },
+  {
+    id: 3,
+    img: '/images/nav/DrawEdit.jpg',
+    text: '组件弹框',
+    path: '/Popup',
+  },
 ])
 
 // 方法
