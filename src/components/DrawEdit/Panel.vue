@@ -19,9 +19,11 @@
         placeholder="名称模糊查询"
         clearable
         @clear="handleSearch"
-        @keyup.enter.native="handleSearch"
+        @keyup.enter="handleSearch"
       >
-        <i slot="prefix" class="el-input__icon el-icon-search"></i>
+        <template #prefix>
+          <el-icon><Search /></el-icon>
+        </template>
       </el-input>
 
       <!-- 改为select选择器 -->
@@ -51,21 +53,21 @@
 
     <!-- 表格 -->
     <el-table :data="tableData" style="width: 100%" @selection-change="handleSelectionChange">
-      <el-table-column type="selection" width="55"> </el-table-column>
-      <el-table-column prop="name" label="名称" width="180"> </el-table-column>
+      <el-table-column type="selection" width="55"></el-table-column>
+      <el-table-column prop="name" label="名称" width="180"></el-table-column>
       <el-table-column prop="type" label="用途类型" width="180">
-        <template slot-scope="scope">
+        <template #default="scope">
           <el-tag :type="getTagType(scope.row.type)">{{ getTypeText(scope.row.type) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="300">
-        <template slot-scope="scope">
-          <el-button size="mini" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button size="mini" type="danger" @click="handleDelete(scope.$index, scope.row)"
+        <template #default="scope">
+          <el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+          <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)"
             >删除</el-button
           >
-          <el-button size="mini" @click="handleCopy(scope.$index, scope.row)">拷贝</el-button>
-          <el-button size="mini" type="success" @click="handleShow(scope.$index, scope.row)"
+          <el-button size="small" @click="handleCopy(scope.$index, scope.row)">拷贝</el-button>
+          <el-button size="small" type="success" @click="handleShow(scope.$index, scope.row)"
             >显示</el-button
           >
         </template>
@@ -74,148 +76,145 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'Panel',
-  components: {},
-  props: {},
-  data() {
-    return {
-      // 头部选项卡
-      activeTab: 'point',
-      // 搜索区域
-      searchName: '',
-      areaType: '', // 改为空值，显示默认placeholder
-      // 表格数据
-      tableData: [
-        { id: 1, name: '测试-点', type: '1' },
-        { id: 2, name: '测试-线', type: '2' },
-        { id: 3, name: '测试-多边形', type: '3' },
-      ],
-      // 选中的行
-      selectedItems: [],
-    }
-  },
-  mounted() {},
-  methods: {
-    // 头部选项卡点击事件
-    handleTabClick(tab) {
-      console.log('当前选中选项卡:', tab.name)
-      // 这里可以根据选项卡切换数据
-    },
+<script setup name="Panel">
+import { ref } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search } from '@element-plus/icons-vue'
 
-    // 区域类型切换
-    handleAreaTypeChange(value) {
-      console.log('当前区域类型:', value)
-      // 这里可以根据区域类型筛选数据
-    },
+// 头部选项卡
+const activeTab = ref('point')
 
-    // 搜索处理
-    handleSearch() {
-      console.log('搜索名称:', this.searchName)
-      // 这里可以实现搜索逻辑
-    },
+// 搜索区域
+const searchName = ref('')
+const areaType = ref('') // 改为空值，显示默认placeholder
 
-    // 表格选择变化
-    handleSelectionChange(val) {
-      this.selectedItems = val
-      console.log('选中项:', val)
-    },
+// 表格数据
+const tableData = ref([
+  { id: 1, name: '测试-点', type: '1' },
+  { id: 2, name: '测试-线', type: '2' },
+  { id: 3, name: '测试-多边形', type: '3' },
+])
 
-    // 获取标签类型
-    getTagType(type) {
-      const typeMap = {
-        1: 'success',
-        2: 'warning',
-        3: 'danger',
-      }
-      return typeMap[type] || 'info'
-    },
+// 选中的行
+const selectedItems = ref([])
 
-    // 获取类型文本
-    getTypeText(type) {
-      const textMap = {
-        1: '适飞区',
-        2: '管制区',
-        3: '禁飞区',
-      }
-      return textMap[type] || '未知'
-    },
+// 头部选项卡点击事件
+const handleTabClick = (tab) => {
+  console.log('当前选中选项卡:', tab.props.name)
+  // 这里可以根据选项卡切换数据
+}
 
-    // 新增
-    handleAdd() {
-      this.$message({
-        message: '新增功能',
-        type: 'info',
-      })
-    },
+// 区域类型切换
+const handleAreaTypeChange = (value) => {
+  console.log('当前区域类型:', value)
+  // 这里可以根据区域类型筛选数据
+}
 
-    // 批量删除
-    handleBatchDelete() {
-      this.$confirm('确定要删除选中的项吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
-        .then(() => {
-          this.$message({
-            type: 'success',
-            message: '删除成功!',
-          })
-        })
-        .catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除',
-          })
-        })
-    },
+// 搜索处理
+const handleSearch = () => {
+  console.log('搜索名称:', searchName.value)
+  // 这里可以实现搜索逻辑
+}
 
-    // 编辑
-    handleEdit(index, row) {
-      this.$message({
-        message: `编辑第${index + 1}行: ${row.name}`,
-        type: 'info',
-      })
-    },
+// 表格选择变化
+const handleSelectionChange = (val) => {
+  selectedItems.value = val
+  console.log('选中项:', val)
+}
 
-    // 删除
-    handleDelete(index, row) {
-      this.$confirm('确定要删除该项吗?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      })
-        .then(() => {
-          this.tableData.splice(index, 1)
-          this.$message({
-            type: 'success',
-            message: '删除成功!',
-          })
-        })
-        .catch(() => {
-          this.$message({
-            type: 'info',
-            message: '已取消删除',
-          })
-        })
-    },
-    // 拷贝
-    handleCopy(index, row) {
-      this.$message({
-        message: `拷贝第${index + 1}行: ${row.name}`,
-        type: 'info',
-      })
-    },
+// 获取标签类型
+const getTagType = (type) => {
+  const typeMap = {
+    1: 'success',
+    2: 'warning',
+    3: 'danger',
+  }
+  return typeMap[type] || 'info'
+}
 
-    // 显示
-    handleShow(index, row) {
-      this.$message({
-        message: `显示第${index + 1}行: ${row.name}`,
+// 获取类型文本
+const getTypeText = (type) => {
+  const textMap = {
+    1: '适飞区',
+    2: '管制区',
+    3: '禁飞区',
+  }
+  return textMap[type] || '未知'
+}
+
+// 新增
+const handleAdd = () => {
+  ElMessage({
+    message: '新增功能',
+    type: 'info',
+  })
+}
+
+// 批量删除
+const handleBatchDelete = () => {
+  ElMessageBox.confirm('确定要删除选中的项吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      ElMessage({
         type: 'success',
+        message: '删除成功!',
       })
-    },
-  },
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '已取消删除',
+      })
+    })
+}
+
+// 编辑
+const handleEdit = (index, row) => {
+  ElMessage({
+    message: `编辑第${index + 1}行: ${row.name}`,
+    type: 'info',
+  })
+}
+
+// 删除
+const handleDelete = (index, row) => {
+  ElMessageBox.confirm('确定要删除该项吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      tableData.value.splice(index, 1)
+      ElMessage({
+        type: 'success',
+        message: '删除成功!',
+      })
+    })
+    .catch(() => {
+      ElMessage({
+        type: 'info',
+        message: '已取消删除',
+      })
+    })
+}
+
+// 拷贝
+const handleCopy = (index, row) => {
+  ElMessage({
+    message: `拷贝第${index + 1}行: ${row.name}`,
+    type: 'info',
+  })
+}
+
+// 显示
+const handleShow = (index, row) => {
+  ElMessage({
+    message: `显示第${index + 1}行: ${row.name}`,
+    type: 'success',
+  })
 }
 </script>
 
@@ -237,7 +236,7 @@ export default {
     margin-bottom: 20px;
     width: 100%;
 
-    /deep/ .el-tabs--card {
+    :deep(.el-tabs--card) {
       .el-tabs__header {
         border: none;
         margin: 0;
@@ -285,7 +284,7 @@ export default {
     .search-box {
       flex: 1;
 
-      /deep/ .el-input__inner {
+      :deep(.el-input__inner) {
         background: #333333;
         border: 1px solid #555555;
         color: #ffffff;
@@ -300,7 +299,7 @@ export default {
         }
       }
 
-      /deep/ .el-input__icon {
+      :deep(.el-input__icon) {
         color: #888888;
       }
     }
@@ -309,7 +308,7 @@ export default {
     .area-select {
       width: 150px;
 
-      /deep/ .el-input__inner {
+      :deep(.el-input__inner) {
         background: #333333;
         border: 1px solid #555555;
         color: #888888; /* 修改：使placeholder文字颜色更明显 */
@@ -320,7 +319,7 @@ export default {
         }
       }
 
-      /deep/ .el-input__suffix {
+      :deep(.el-input__suffix) {
         .el-select__caret {
           color: #888888;
         }
@@ -328,7 +327,7 @@ export default {
     }
 
     // 下拉菜单样式
-    /deep/ .el-select-dropdown {
+    :deep(.el-select-dropdown) {
       background: #333333;
       border: 1px solid #555555;
       border-radius: 4px;
@@ -361,7 +360,7 @@ export default {
     justify-content: flex-start; /* 关键修改：按钮靠左对齐 */
     gap: 10px;
 
-    /deep/ .el-button {
+    :deep(.el-button) {
       border-radius: 4px;
       font-weight: 500;
       transition: all 0.3s ease;
@@ -395,7 +394,7 @@ export default {
   }
 
   // 表格样式 - 修改：防止出现水平滚动条
-  /deep/ .el-table {
+  :deep(.el-table) {
     background: transparent;
     border: 1px solid #444444;
     border-radius: 4px;
@@ -483,7 +482,7 @@ export default {
       font-weight: 500;
       transition: all 0.3s ease;
 
-      &.el-button--mini {
+      &.el-button--small {
         padding: 5px 10px;
         font-size: 12px;
       }
