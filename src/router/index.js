@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-09 09:31:51
  * @LastEditors: dys
- * @LastEditTime: 2025-12-16 14:51:47
+ * @LastEditTime: 2025-12-16 16:39:26
  * @Descripttion:
  */
 import { createRouter, createWebHistory } from 'vue-router'
@@ -15,7 +15,7 @@ const router = createRouter({
       path: '/AxisPlane',
       component: () => import('../components/AxisPlane/index.vue'),
       meta: {
-        title: '坐标轴',
+        title: '坐标轴', //路由守卫
       },
     },
     {
@@ -34,7 +34,24 @@ const router = createRouter({
         title: '组件弹框',
       },
     },
+    {
+      name: 'Weather',
+      path: '/Weather',
+      component: () => import('@/components/Weather/index.vue'),
+      meta: {
+        title: '气象',
+      },
+    },
   ],
+})
+
+//全局后置守卫：初始化时执行、每次路由切换后执行
+router.afterEach((to, from) => {
+  if (to.meta.title) {
+    document.title = to.meta.title
+  } else {
+    document.title = 'Vite App'
+  }
 })
 
 export default router

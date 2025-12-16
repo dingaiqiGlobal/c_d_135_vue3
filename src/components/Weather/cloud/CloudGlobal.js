@@ -2,65 +2,63 @@
  * 云朵-全球
  * 后期处理
  */
-import * as mars3d from "mars3d";
-const Cesium = mars3d.Cesium;
+import * as Cesium from 'cesium'
 class CloudGlobal {
-	constructor(viewer, options) {
-		if (!viewer) throw new Error("no viewer object!");
-		this.options = options || {};
-		this.windSpeedRatio = options.windSpeedRatio || 0.0004; //风速
-		this.cloudCover = options.cloudCover || 0.63; //云量
-		this.cloudBase = options.cloudBase || 200; //云底高度
-		this.cloudTop = options.cloudTop || 900; //云顶高度
-		this.cloudThickness = options.cloudThickness || 7000; //云层厚度
-		this.cloudBaseRadius = options.cloudBaseRadius || 6378137 + 2000; //云层底部半径
-		this.cloudTopRadius = options.cloudTopRadius || 6378137 + 6000; //云层顶部半径
-		this.currentWindVectorWC =
-			options.currentWindVectorWC || new Cesium.Cartesian3(100, 0, 0); //风向
-		this.maxViewingDistance = options.maxViewingDistance || 500000.0; //云层最大可视距离
-		this.viewer = viewer;
-		this.init();
-	}
-	init() {
-		this.cloudGlobalStage = new Cesium.PostProcessStage({
-			name: "czm_cloudGlobal",
-			fragmentShader: this.fs(),
-			uniforms: {
-				realPlanetRadius: 6378137,
-				windSpeedRatio: this.windSpeedRatio,
-				windVector: this.currentWindVectorWC,
-				cloudCover: this.cloudCover,
-				cloudBase: this.cloudBase,
-				cloudTop: this.cloudTop,
-				cloudThickness: this.cloudThickness,
-				cloudBaseRadius: this.cloudBaseRadius,
-				cloudTopRadius: this.cloudTopRadius,
-			},
-		});
-		this.viewer.scene.postProcessStages.add(this.cloudGlobalStage);
-	}
-	update(options) {
-		this.cloudGlobalStage.uniforms.windSpeedRatio = options.windSpeedRatio || 0.0001; //风速
-		this.cloudGlobalStage.uniforms.cloudCover = options.cloudCover || 0.63; //云量
-		this.cloudGlobalStage.uniforms.cloudBase = options.cloudBase || 200; //云底高度
-		this.cloudGlobalStage.uniforms.cloudTop = options.cloudTop || 900; //云顶高度
-		this.cloudGlobalStage.uniforms.cloudThickness = options.cloudThickness || 7000; //云层厚度
-		this.cloudGlobalStage.uniforms.cloudBaseRadius = options.cloudBaseRadius || 6378137 + 2000; //云层底部半径
-		this.cloudGlobalStage.uniforms.cloudTopRadius = options.cloudTopRadius || 6378137 + 6000; //云层顶部半径
-		this.cloudGlobalStage.uniforms.currentWindVectorWC =
-			options.currentWindVectorWC || new Cesium.Cartesian3(100, 0, 0); //风向
-		this.cloudGlobalStage.uniforms.maxViewingDistance = options.maxViewingDistance || 500000.0; //云层最大可视距离
-	}
-	destroy() {
-		if (!this.viewer || !this.cloudGlobalStage) return;
-		this.viewer.scene.postProcessStages.remove(this.cloudGlobalStage);
-		this.cloudGlobalStage.destroy();
-	}
-	show(visible) {
-		this.cloudGlobalStage.enabled = visible;
-	}
-	fs() {
-		return` 
+  constructor(viewer, options) {
+    if (!viewer) throw new Error('no viewer object!')
+    this.options = options || {}
+    this.windSpeedRatio = options.windSpeedRatio || 0.0004 //风速
+    this.cloudCover = options.cloudCover || 0.63 //云量
+    this.cloudBase = options.cloudBase || 200 //云底高度
+    this.cloudTop = options.cloudTop || 900 //云顶高度
+    this.cloudThickness = options.cloudThickness || 7000 //云层厚度
+    this.cloudBaseRadius = options.cloudBaseRadius || 6378137 + 2000 //云层底部半径
+    this.cloudTopRadius = options.cloudTopRadius || 6378137 + 6000 //云层顶部半径
+    this.currentWindVectorWC = options.currentWindVectorWC || new Cesium.Cartesian3(100, 0, 0) //风向
+    this.maxViewingDistance = options.maxViewingDistance || 500000.0 //云层最大可视距离
+    this.viewer = viewer
+    this.init()
+  }
+  init() {
+    this.cloudGlobalStage = new Cesium.PostProcessStage({
+      name: 'czm_cloudGlobal',
+      fragmentShader: this.fs(),
+      uniforms: {
+        realPlanetRadius: 6378137,
+        windSpeedRatio: this.windSpeedRatio,
+        windVector: this.currentWindVectorWC,
+        cloudCover: this.cloudCover,
+        cloudBase: this.cloudBase,
+        cloudTop: this.cloudTop,
+        cloudThickness: this.cloudThickness,
+        cloudBaseRadius: this.cloudBaseRadius,
+        cloudTopRadius: this.cloudTopRadius,
+      },
+    })
+    this.viewer.scene.postProcessStages.add(this.cloudGlobalStage)
+  }
+  update(options) {
+    this.cloudGlobalStage.uniforms.windSpeedRatio = options.windSpeedRatio || 0.0001 //风速
+    this.cloudGlobalStage.uniforms.cloudCover = options.cloudCover || 0.63 //云量
+    this.cloudGlobalStage.uniforms.cloudBase = options.cloudBase || 200 //云底高度
+    this.cloudGlobalStage.uniforms.cloudTop = options.cloudTop || 900 //云顶高度
+    this.cloudGlobalStage.uniforms.cloudThickness = options.cloudThickness || 7000 //云层厚度
+    this.cloudGlobalStage.uniforms.cloudBaseRadius = options.cloudBaseRadius || 6378137 + 2000 //云层底部半径
+    this.cloudGlobalStage.uniforms.cloudTopRadius = options.cloudTopRadius || 6378137 + 6000 //云层顶部半径
+    this.cloudGlobalStage.uniforms.currentWindVectorWC =
+      options.currentWindVectorWC || new Cesium.Cartesian3(100, 0, 0) //风向
+    this.cloudGlobalStage.uniforms.maxViewingDistance = options.maxViewingDistance || 500000.0 //云层最大可视距离
+  }
+  destroy() {
+    if (!this.viewer || !this.cloudGlobalStage) return
+    this.viewer.scene.postProcessStages.remove(this.cloudGlobalStage)
+    this.cloudGlobalStage.destroy()
+  }
+  show(visible) {
+    this.cloudGlobalStage.enabled = visible
+  }
+  fs() {
+    return ` 
       precision highp float;  
       uniform float realPlanetRadius; //地球半径 
       uniform float windSpeedRatio;//风速
@@ -294,7 +292,7 @@ class CloudGlobal {
         color = vec4(1.0 - exp(-exposure * color));  
         out_FragColor = color;
       }
-        `;
-	}
+        `
+  }
 }
-export default CloudGlobal;
+export default CloudGlobal

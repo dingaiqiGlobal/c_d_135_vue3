@@ -2,51 +2,49 @@
  * 雾-局部
  * 后期处理
  */
-import * as mars3d from "mars3d";
-const Cesium = mars3d.Cesium;
+import * as Cesium from 'cesium'
 class FogLocal {
-	constructor(viewer, options) {
-		if (!viewer) throw new Error("no viewer object!");
-		this.options = options || {};
-		this.fogColor = options.fogColor || new Cesium.Color(0.8, 0.82, 0.84); //颜色
-		this.fogHeight = options.fogHeight || 10; //高度
-		this.globalDensity = options.globalDensity || 0.6; //全局密度
-		this.viewer = viewer;
-		this.viewer.scene.globe.depthTestAgainstTerrain = true; //雾必须开启深度检测
-		this.init();
-	}
-	init() {
-		this.fogLocalStage = new Cesium.PostProcessStage({
-			name: "czm_fogLocal",
-			fragmentShader: this.fs(),
-			uniforms: {
-				u_earthRadiusOnCamera: () =>
-					Cesium.Cartesian3.magnitude(viewer.camera.positionWC) -
-					viewer.camera.positionCartographic.height, //这是个近似计算，求地球半径
-				u_cameraHeight: () => viewer.camera.positionCartographic.height,
-				u_fogColor: this.fogColor,
-				u_fogHeight: this.fogHeight,
-				u_globalDensity: this.globalDensity,
-			},
-		});
-		this.viewer.scene.postProcessStages.add(this.fogLocalStage);
-	}
-	update(options) {
-		this.fogLocalStage.uniforms.fogColor =
-			options.fogColor || new Cesium.Color(0.8, 0.82, 0.84); //颜色
-		this.fogLocalStage.uniforms.fogHeight = options.fogHeight || 10; //高度
-		this.fogLocalStage.uniforms.globalDensity = options.globalDensity || 0.6; //全局密度
-	}
-	destroy() {
-		if (!this.viewer || !this.fogLocalStage) return;
-		this.viewer.scene.postProcessStages.remove(this.fogLocalStage);
-		this.fogLocalStage.destroy();
-	}
-	show(visible) {
-		this.fogLocalStage.enabled = visible;
-	}
-	fs() {
-		return `
+  constructor(viewer, options) {
+    if (!viewer) throw new Error('no viewer object!')
+    this.options = options || {}
+    this.fogColor = options.fogColor || new Cesium.Color(0.8, 0.82, 0.84) //颜色
+    this.fogHeight = options.fogHeight || 10 //高度
+    this.globalDensity = options.globalDensity || 0.6 //全局密度
+    this.viewer = viewer
+    this.viewer.scene.globe.depthTestAgainstTerrain = true //雾必须开启深度检测
+    this.init()
+  }
+  init() {
+    this.fogLocalStage = new Cesium.PostProcessStage({
+      name: 'czm_fogLocal',
+      fragmentShader: this.fs(),
+      uniforms: {
+        u_earthRadiusOnCamera: () =>
+          Cesium.Cartesian3.magnitude(viewer.camera.positionWC) -
+          viewer.camera.positionCartographic.height, //这是个近似计算，求地球半径
+        u_cameraHeight: () => viewer.camera.positionCartographic.height,
+        u_fogColor: this.fogColor,
+        u_fogHeight: this.fogHeight,
+        u_globalDensity: this.globalDensity,
+      },
+    })
+    this.viewer.scene.postProcessStages.add(this.fogLocalStage)
+  }
+  update(options) {
+    this.fogLocalStage.uniforms.fogColor = options.fogColor || new Cesium.Color(0.8, 0.82, 0.84) //颜色
+    this.fogLocalStage.uniforms.fogHeight = options.fogHeight || 10 //高度
+    this.fogLocalStage.uniforms.globalDensity = options.globalDensity || 0.6 //全局密度
+  }
+  destroy() {
+    if (!this.viewer || !this.fogLocalStage) return
+    this.viewer.scene.postProcessStages.remove(this.fogLocalStage)
+    this.fogLocalStage.destroy()
+  }
+  show(visible) {
+    this.fogLocalStage.enabled = visible
+  }
+  fs() {
+    return `
             uniform sampler2D colorTexture;  // 颜色纹理
             uniform sampler2D depthTexture;  // 深度纹理
             in vec2 v_textureCoordinates;  // 纹理坐标
@@ -109,7 +107,7 @@ class FogLocal {
                 vec3 positionToCamera = vec3(vec3(positionWC) - czm_viewerPositionWC);
                 float fog = linearHeightFog(positionToCamera, u_cameraHeight, pixelHeight, u_fogHeight);
                 out_FragColor = mix(color, vec4(u_fogColor, 1.0), fog);
-            }`;
-	}
+            }`
+  }
 }
-export default FogLocal;
+export default FogLocal

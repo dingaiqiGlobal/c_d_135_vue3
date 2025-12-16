@@ -33,6 +33,12 @@ const list = ref([
     text: '组件弹框',
     path: '/Popup',
   },
+  {
+    id: 4,
+    img: '/images/nav/Popup.jpg',
+    text: '气象集合',
+    path: '/Weather',
+  },
 ])
 
 // 方法

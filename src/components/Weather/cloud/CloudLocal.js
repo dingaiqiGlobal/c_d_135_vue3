@@ -2,52 +2,51 @@
  * 云朵-局部
  * 后期处理
  */
-import * as mars3d from "mars3d";
-const Cesium = mars3d.Cesium;
+import * as Cesium from 'cesium'
 class CloudGlobal {
-	constructor(viewer, options) {
-		if (!viewer) throw new Error("no viewer object!");
-		this.options = options || {};
-		this.cloudCoverage = options.cloudCoverage || 0.5; //云朵覆盖率
-		this.position = options.position || {
-			lon: 114.25584,
-			lat: 22.58968,
-			height: 0,
-		};//位置（长宽高在shader中）
-		this.viewer = viewer;
-		this.init();
-	}
-	init() {
-		const position = Cesium.Cartesian3.fromDegrees(
-			this.position.lon,
-			this.position.lat,
-			this.position.height
-		);
-		const transform = Cesium.Transforms.eastNorthUpToFixedFrame(position); //矩阵
-		const inverse = Cesium.Matrix4.inverse(transform, new Cesium.Matrix4()); //逆矩阵
-		this.cloudLocalStage = new Cesium.PostProcessStage({
-			name: "czm_cloudLocal",
-			fragmentShader: this.fs(),
-			uniforms: {
-				inverse: inverse,//逆矩阵为参数
-				cloudCoverage: this.cloudCoverage,
-			},
-		});
-		this.viewer.scene.postProcessStages.add(this.cloudLocalStage);
-	}
-	destroy() {
-		if (!this.viewer || !this.cloudLocalStage) return;
-		this.viewer.scene.postProcessStages.remove(this.cloudLocalStage);
-		this.cloudLocalStage.destroy();
-		//删除参数
-		delete this.cloudCoverage;
-		delete this.position;
-	}
-	show(visible) {
-		this.cloudLocalStage.enabled = visible;
-	}
-	fs() {
-		return `
+  constructor(viewer, options) {
+    if (!viewer) throw new Error('no viewer object!')
+    this.options = options || {}
+    this.cloudCoverage = options.cloudCoverage || 0.5 //云朵覆盖率
+    this.position = options.position || {
+      lon: 114.25584,
+      lat: 22.58968,
+      height: 0,
+    } //位置（长宽高在shader中）
+    this.viewer = viewer
+    this.init()
+  }
+  init() {
+    const position = Cesium.Cartesian3.fromDegrees(
+      this.position.lon,
+      this.position.lat,
+      this.position.height,
+    )
+    const transform = Cesium.Transforms.eastNorthUpToFixedFrame(position) //矩阵
+    const inverse = Cesium.Matrix4.inverse(transform, new Cesium.Matrix4()) //逆矩阵
+    this.cloudLocalStage = new Cesium.PostProcessStage({
+      name: 'czm_cloudLocal',
+      fragmentShader: this.fs(),
+      uniforms: {
+        inverse: inverse, //逆矩阵为参数
+        cloudCoverage: this.cloudCoverage,
+      },
+    })
+    this.viewer.scene.postProcessStages.add(this.cloudLocalStage)
+  }
+  destroy() {
+    if (!this.viewer || !this.cloudLocalStage) return
+    this.viewer.scene.postProcessStages.remove(this.cloudLocalStage)
+    this.cloudLocalStage.destroy()
+    //删除参数
+    delete this.cloudCoverage
+    delete this.position
+  }
+  show(visible) {
+    this.cloudLocalStage.enabled = visible
+  }
+  fs() {
+    return `
          uniform sampler2D colorTexture;
          uniform sampler2D depthTexture; 
          in vec2 v_textureCoordinates;  
@@ -264,7 +263,7 @@ class CloudGlobal {
            color = vec4(1.0 - exp(-exposure * color));  
            out_FragColor = color;
          }
-   `;
-	}
+   `
+  }
 }
-export default CloudGlobal;
+export default CloudGlobal
