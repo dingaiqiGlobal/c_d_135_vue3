@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-09 10:02:49
  * @LastEditors: dys
- * @LastEditTime: 2025-12-16 09:25:52
+ * @LastEditTime: 2025-12-16 09:34:46
  * @Descripttion: 
 -->
 <template>
@@ -15,7 +15,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import * as Cesium from 'cesium'
 import Panel from './Panel.vue'
-import ViewInit from '../utils/ViewInit'
+import ViewInit from '../../utils/ViewInit'
 
 let viewer = ref(null)
 
