@@ -8,7 +8,7 @@ class FogLocal {
     if (!viewer) throw new Error('no viewer object!')
     this.options = options || {}
     this.fogColor = options.fogColor || new Cesium.Color(0.8, 0.82, 0.84) //颜色
-    this.fogHeight = options.fogHeight || 10 //高度
+    this.fogHeight = options.fogHeight || 250 //高度
     this.globalDensity = options.globalDensity || 0.6 //全局密度
     this.viewer = viewer
     this.viewer.scene.globe.depthTestAgainstTerrain = true //雾必须开启深度检测
@@ -20,9 +20,9 @@ class FogLocal {
       fragmentShader: this.fs(),
       uniforms: {
         u_earthRadiusOnCamera: () =>
-          Cesium.Cartesian3.magnitude(viewer.camera.positionWC) -
-          viewer.camera.positionCartographic.height, //这是个近似计算，求地球半径
-        u_cameraHeight: () => viewer.camera.positionCartographic.height,
+          Cesium.Cartesian3.magnitude(this.viewer.camera.positionWC) -
+          this.viewer.camera.positionCartographic.height, //这是个近似计算，求地球半径
+        u_cameraHeight: () => this.viewer.camera.positionCartographic.height,
         u_fogColor: this.fogColor,
         u_fogHeight: this.fogHeight,
         u_globalDensity: this.globalDensity,

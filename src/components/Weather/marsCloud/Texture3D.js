@@ -6,7 +6,6 @@
 import * as Cesium from 'cesium'
 const Cartesian3 = Cesium.Cartesian3
 const Check = Cesium.Check
-const defaultValue = Cesium.defaultValue
 const defined = Cesium.defined
 const destroyObject = Cesium.destroyObject
 const DeveloperError = Cesium.DeveloperError
@@ -21,15 +20,20 @@ const Sampler = Cesium.Sampler
  */
 class Texture3D {
   constructor(options) {
-    options = defaultValue(options, defaultValue.EMPTY_OBJECT)
+    // ✅ 替换为：空值合并运算符 ??
+    options = options ?? {}
     Check.defined('options.context', options.context)
     const context = options.context
     let width = options.width
     let height = options.height
     let depth = options.depth
     let source = options.source
-    const pixelFormat = defaultValue(options.pixelFormat, PixelFormat.RGBA)
-    const pixelDatatype = defaultValue(options.pixelDataType, PixelDatatype.UNSIGNED_BYTE)
+
+    // ✅ 替换为：空值合并运算符 ??
+    const pixelFormat = options.pixelFormat ?? PixelFormat.RGBA
+    // ✅ 注意：这里原代码是 pixelDataType，使用时需保持一致
+    const pixelDatatype = options.pixelDataType ?? PixelDatatype.UNSIGNED_BYTE
+
     const internalFormat = PixelFormat.toInternalFormat(pixelFormat, pixelDatatype, context)
     if (!defined(width) || !defined(height) || !defined(depth)) {
       throw new DeveloperError(
@@ -106,6 +110,8 @@ class Texture3D {
     this._flipY = false
     this._initialized = initialized
     this._sampler = undefined
+
+    // ✅ 替换为：三元运算符或逻辑判断
     this.sampler = defined(options.sampler) ? options.sampler : new Sampler()
   }
 
@@ -115,16 +121,24 @@ class Texture3D {
    * @returns 新创建的3D纹理对象
    */
   static fromFramebuffer(options) {
-    options = defaultValue(options, defaultValue.EMPTY_OBJECT)
+    // ✅ 替换为：空值合并运算符 ??
+    options = options ?? {}
     Check.defined('options.context', options.context)
     const context = options.context
     const gl = context._gl
-    const pixelFormat = defaultValue(options.pixelFormat, PixelFormat.RGB)
-    const framebufferXOffset = defaultValue(options.framebufferXOffset, 0)
-    const framebufferYOffset = defaultValue(options.framebufferYOffset, 0)
-    const width = defaultValue(options.width, gl.drawingBufferWidth)
-    const height = defaultValue(options.height, gl.drawingBufferHeight)
-    const depth = defaultValue(options.depth, 128)
+
+    // ✅ 替换为：空值合并运算符 ??
+    const pixelFormat = options.pixelFormat ?? PixelFormat.RGB
+    // ✅ 替换为：空值合并运算符 ??
+    const framebufferXOffset = options.framebufferXOffset ?? 0
+    // ✅ 替换为：空值合并运算符 ??
+    const framebufferYOffset = options.framebufferYOffset ?? 0
+    // ✅ 替换为：空值合并运算符 ??
+    const width = options.width ?? gl.drawingBufferWidth
+    // ✅ 替换为：空值合并运算符 ??
+    const height = options.height ?? gl.drawingBufferHeight
+    // ✅ 替换为：空值合并运算符 ??
+    const depth = options.depth ?? 128
     const framebuffer = options.framebuffer
     const texture = new Texture3D({
       context: context,

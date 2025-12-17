@@ -9,8 +9,8 @@ class CloudGlobal {
     this.options = options || {}
     this.cloudCoverage = options.cloudCoverage || 0.5 //云朵覆盖率
     this.position = options.position || {
-      lon: 114.25584,
-      lat: 22.58968,
+      lon: 116.19767,
+      lat: 39.99277,
       height: 0,
     } //位置（长宽高在shader中）
     this.viewer = viewer

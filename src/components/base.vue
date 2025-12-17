@@ -21,7 +21,7 @@ onMounted(() => {
   ViewInit.init()
   viewer.value = ViewInit.viewer
   viewer.value.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(116.22453, 40.55553, 10000.0),
+    destination: Cesium.Cartesian3.fromDegrees(116.39122, 39.9071, 10000.0),
   })
 })
 </script>
