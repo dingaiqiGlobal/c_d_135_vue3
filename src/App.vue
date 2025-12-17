@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-09 09:31:51
  * @LastEditors: dys
- * @LastEditTime: 2025-12-09 11:15:00
+ * @LastEditTime: 2025-12-17 10:08:38
  * @Descripttion: 
 -->
 <template>
@@ -21,13 +21,7 @@ import Navigation from './views/Navigation.vue'
 </script>
 
 <style lang="less">
-html,
-body {
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
+@import '@/style/style.less';
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
