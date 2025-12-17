@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-09 09:31:51
  * @LastEditors: dys
- * @LastEditTime: 2025-12-16 16:39:26
+ * @LastEditTime: 2025-12-17 15:01:11
  * @Descripttion:
  */
 import { createRouter, createWebHistory } from 'vue-router'
@@ -40,6 +40,14 @@ const router = createRouter({
       component: () => import('@/components/Weather/index.vue'),
       meta: {
         title: '气象',
+      },
+    },
+    {
+      name: 'ModelAnimationPlayer',
+      path: '/ModelAnimationPlayer',
+      component: () => import('@/components/ModelAnimationPlayer/index.vue'),
+      meta: {
+        title: 'glb动画播放器',
       },
     },
   ],

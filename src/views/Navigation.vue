@@ -39,6 +39,12 @@ const list = ref([
     text: '气象集合',
     path: '/Weather',
   },
+  {
+    id: 4,
+    img: '/images/nav/Weather.jpg',
+    text: 'glb动画播放器',
+    path: '/ModelAnimationPlayer',
+  },
 ])
 
 // 方法
