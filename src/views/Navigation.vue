@@ -35,7 +35,7 @@ const list = ref([
   },
   {
     id: 4,
-    img: '/images/nav/Popup.jpg',
+    img: '/images/nav/Weather.jpg',
     text: '气象集合',
     path: '/Weather',
   },
