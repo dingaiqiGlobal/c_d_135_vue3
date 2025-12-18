@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-09 09:31:51
  * @LastEditors: dys
- * @LastEditTime: 2025-12-17 15:01:11
+ * @LastEditTime: 2025-12-18 16:20:23
  * @Descripttion:
  */
 import { createRouter, createWebHistory } from 'vue-router'
@@ -48,6 +48,14 @@ const router = createRouter({
       component: () => import('@/components/ModelAnimationPlayer/index.vue'),
       meta: {
         title: 'glb动画播放器',
+      },
+    },
+    {
+      name: 'Roaming',
+      path: '/Roaming',
+      component: () => import('@/components/Roaming/index.vue'),
+      meta: {
+        title: '轨迹漫游',
       },
     },
   ],

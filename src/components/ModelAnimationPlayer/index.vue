@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-17 14:59:09
  * @LastEditors: dys
- * @LastEditTime: 2025-12-17 15:53:53
+ * @LastEditTime: 2025-12-18 16:14:30
  * @Descripttion: 
 -->
 <template>
@@ -13,7 +13,7 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import * as Cesium from 'cesium'
 import ViewInit from '@/utils/ViewInit'
 import Plane from './Plane.vue'

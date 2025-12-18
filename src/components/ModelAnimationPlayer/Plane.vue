@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-17 14:59:25
  * @LastEditors: dys
- * @LastEditTime: 2025-12-18 11:38:58
+ * @LastEditTime: 2025-12-18 16:14:24
  * @Descripttion: 
 -->
 <template>
@@ -113,7 +113,7 @@
   </div>
 </template>
 <script setup>
-import { ref, reactive, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, onMounted, onUnmounted } from 'vue'
 import * as Cesium from 'cesium'
 import { AnimationParser, AnimationPlayer, LOOP_TYPE } from './js/ModelAnimationPlayer'
 let { viewer } = defineProps(['viewer'])
