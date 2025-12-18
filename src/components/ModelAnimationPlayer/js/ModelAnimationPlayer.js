@@ -37,6 +37,11 @@ export class AnimationSet {
     this.animations = animations // Animation对象数组
     this.nodes = nodes // 节点字典
   }
+
+  // 获取所有动画名称
+  getAllAnimationName() {
+    return this.animations.map((anim) => anim.name)
+  }
 }
 
 // 动画播放器类 - 核心动画控制类
@@ -79,6 +84,9 @@ export class AnimationPlayer {
     this.current_time = 0 // 当前播放时间
     this.speed = 1 // 播放速度
     this._frame_duration = 1.0 / fps // 每帧持续时间（秒）
+
+    // 添加动画名称属性便于UI访问
+    this.currentAnimation = this.current_animation ? this.current_animation.name : ''
   }
 
   // 设置当前播放的动画
@@ -86,10 +94,11 @@ export class AnimationPlayer {
     for (var i = 0; i < this.animation_set.animations.length; i++) {
       if (animation_name === this.animation_set.animations[i].name) {
         this.current_animation = this.animation_set.animations[i]
+        this.currentAnimation = animation_name
         return
       }
     }
-    console.error("Can't set current animation: " + animation_name + ' does not exist')
+    console.warn('动画未找到:', animation_name)
   }
 
   // 设置帧率
@@ -104,11 +113,16 @@ export class AnimationPlayer {
       if (this.play_state === PLAY_STATE.PLAY) {
         return // 已经在播放中
       } else if (this.play_state === PLAY_STATE.PAUSE) {
-        this.play_state = PLAY_STATE.PLAY // 从暂停恢复
+        return this.resume() // 从暂停恢复
       } else if (this.play_state === PLAY_STATE.STOP) {
         this.play_state = PLAY_STATE.PLAY
+        // 如果当前时间为0，从头开始
+        if (this.current_time === 0) {
+          this.setTime(0)
+        }
         // 启动更新定时器
-        this.interval_id = window.setInterval(() => this._update(), this._frame_duration * 1000)
+        this._startUpdateInterval()
+        return
       }
       return
     }
@@ -118,31 +132,51 @@ export class AnimationPlayer {
     for (var i = 0; i < animations.length; i++) {
       if (animations[i].name === animation_name) {
         this.current_animation = animations[i]
-        // 状态转换逻辑同上
+        this.currentAnimation = animation_name
+
+        // 状态转换逻辑
         if (this.play_state === PLAY_STATE.PLAY) {
+          this.current_time = 0
+          this.setTime(0)
+          this._startUpdateInterval()
           return
         } else if (this.play_state === PLAY_STATE.PAUSE) {
           this.play_state = PLAY_STATE.PLAY
+          this.current_time = 0
+          this.setTime(0)
+          this._startUpdateInterval()
+          return
         } else if (this.play_state === PLAY_STATE.STOP) {
           this.play_state = PLAY_STATE.PLAY
-          this.interval_id = window.setInterval(() => this._update(), this._frame_duration * 1000)
+          this.current_time = 0
+          this.setTime(0)
+          this._startUpdateInterval()
+          return
         }
-        return
       }
     }
-    console.error("Can't play animation: " + animation_name + ' does not exist')
+    console.warn('动画未找到:', animation_name)
+  }
+
+  // 开始更新定时器
+  _startUpdateInterval() {
+    this._clearUpdateInterval()
+    this.interval_id = window.setInterval(() => this._update(), this._frame_duration * 1000)
   }
 
   // 清除更新定时器
   _clearUpdateInterval() {
-    clearInterval(this.interval_id)
-    this.interval_id = -1
+    if (this.interval_id !== -1) {
+      clearInterval(this.interval_id)
+      this.interval_id = -1
+    }
   }
 
   // 更新函数，由定时器调用
   _update() {
-    if (this.play_state === PLAY_STATE.PLAY)
+    if (this.play_state === PLAY_STATE.PLAY) {
       this.setTime(this.current_time + this._frame_duration * this.speed)
+    }
   }
 
   // 设置播放百分比（0.0到1.0）
@@ -165,16 +199,25 @@ export class AnimationPlayer {
       if (this.current_time > this.current_animation.duration) {
         if (this.loop_type === LOOP_TYPE.CLAMP) {
           this.current_time = this.current_animation.duration // 钳制到末尾
+          // 动画播放完毕，如果是CLAMP模式则停止
+          if (this.play_state === PLAY_STATE.PLAY) {
+            this.stop()
+          }
         } else if (this.loop_type === LOOP_TYPE.LOOP) {
-          this.current_time = 0 // 循环到开始
+          this.current_time = this.current_time % this.current_animation.duration // 循环到开始
         }
       }
     } else if (this.speed < 0) {
       if (this.current_time < 0) {
         if (this.loop_type === LOOP_TYPE.CLAMP) {
           this.current_time = 0
+          // 动画播放完毕，如果是CLAMP模式则停止
+          if (this.play_state === PLAY_STATE.PLAY) {
+            this.stop()
+          }
         } else if (this.loop_type === LOOP_TYPE.LOOP) {
-          this.current_time = this.current_animation.duration
+          this.current_time =
+            this.current_animation.duration + (this.current_time % this.current_animation.duration)
         }
       }
     }
@@ -392,60 +435,92 @@ export class AnimationPlayer {
   // 暂停动画
   pause() {
     // 只有播放状态才需要暂停
-    if (this.play_state === PLAY_STATE.PLAY) this.play_state = PLAY_STATE.PAUSE
+    if (this.play_state === PLAY_STATE.PLAY) {
+      this.play_state = PLAY_STATE.PAUSE
+    }
     this._clearUpdateInterval()
+  }
+
+  // 恢复播放（从暂停状态）
+  resume() {
+    // 只有暂停状态才能恢复
+    if (this.play_state === PLAY_STATE.PAUSE) {
+      this.play_state = PLAY_STATE.PLAY
+      this._startUpdateInterval()
+      return true
+    }
+    console.warn('恢复失败: 当前状态不是暂停状态')
+    return false
   }
 }
 
 // GLB/glTF动画解析器类
 export class AnimationParser {
-  // 异步读取文件
+  // 异步读取文件 - 修复：更好的参数验证
   static _readFileAsync(file) {
     return new Promise((resolve, reject) => {
-      let reader = new FileReader()
-
-      reader.onload = () => {
-        resolve(reader.result)
+      // 参数验证
+      if (!(file instanceof Blob || file instanceof File || file instanceof ArrayBuffer)) {
+        reject(new TypeError('Expected a Blob, File, or ArrayBuffer'))
+        return
       }
 
-      reader.onerror = reject
+      // 如果已经是ArrayBuffer，直接返回
+      if (file instanceof ArrayBuffer) {
+        resolve(file)
+        return
+      }
 
-      reader.readAsArrayBuffer(file)
+      let reader = new FileReader()
+
+      reader.onload = (event) => {
+        resolve(event.target.result)
+      }
+
+      reader.onerror = (event) => {
+        reject(new Error(`FileReader error: ${event.target.error}`))
+      }
+
+      // 确保是有效的Blob/File
+      try {
+        reader.readAsArrayBuffer(file)
+      } catch (error) {
+        reject(error)
+      }
     })
   }
 
   // 异步获取网络资源
   static _getResourceAsync(uri) {
     return new Promise((resolve, reject) => {
-      var req = new Request(uri)
-
-      fetch(req)
-        .then(function (response) {
+      fetch(uri)
+        .then((response) => {
           if (!response.ok) {
-            reject(new Error(response.statusText))
+            reject(new Error(`HTTP ${response.status}: ${response.statusText}`))
           }
-          return response
+          return response.arrayBuffer()
         })
-        .then(function (response) {
-          resolve(response.arrayBuffer())
-        })
+        .then((arrayBuffer) => resolve(arrayBuffer))
+        .catch((error) => reject(error))
     })
   }
 
   // 从ArrayBuffer解析节点信息
   static parseAnimationNodesFromArrayBuffer(array_buffer) {
+    if (!(array_buffer instanceof ArrayBuffer)) {
+      return []
+    }
+
     // 根据glTF标准，从第12字节开始读取JSON数据长度
     let dv = new DataView(array_buffer, 12, 4)
     // glTF使用小端字节序
     let json_chunk_length = dv.getUint32(0, true)
-    console.log('gltf JSON length: ' + json_chunk_length + ' bytes')
 
     // 获取实际的JSON数据（从第20字节开始）
     let json_data_chunk = array_buffer.slice(20, 20 + json_chunk_length)
     let decoder = new TextDecoder('UTF-8')
     let json_text = decoder.decode(json_data_chunk)
     let gltf_json = JSON.parse(json_text)
-    console.log('gltf JSON loaded successfully:')
 
     // 建立父子节点关系
     for (var i = 0; i < gltf_json.nodes.length; i++) {
@@ -461,26 +536,31 @@ export class AnimationParser {
 
   // 从ArrayBuffer解析动画数据
   static parseAnimationsFromArrayBuffer(array_buffer) {
+    if (!(array_buffer instanceof ArrayBuffer)) {
+      return []
+    }
+
     let animations = []
 
     // 读取JSON数据长度
     let dv = new DataView(array_buffer, 12, 4)
     let json_chunk_length = dv.getUint32(0, true)
-    console.log('gltf JSON length: ' + json_chunk_length + ' bytes')
 
     // 获取并解析JSON数据
     let json_data_chunk = array_buffer.slice(20, 20 + json_chunk_length)
     let decoder = new TextDecoder('UTF-8')
     let json_text = decoder.decode(json_data_chunk)
     let gltf_json = JSON.parse(json_text)
-    console.log('gltf JSON loaded successfully:')
-    console.log(gltf_json)
+
+    // 检查是否有二进制数据块
+    if (json_chunk_length + 20 >= array_buffer.byteLength) {
+      return animations
+    }
 
     // 获取二进制数据块长度
     let bin_offset = 20 + json_chunk_length
     dv = new DataView(array_buffer, bin_offset, 4)
     let bin_chunk_length = dv.getUint32(0, true)
-    console.log('gltf bin length: ' + bin_chunk_length + ' bytes')
 
     // 获取实际的二进制数据（跳过8字节的头部）
     let bin_data_chunk = array_buffer.slice(bin_offset + 8, bin_offset + 8 + bin_chunk_length)
@@ -494,7 +574,6 @@ export class AnimationParser {
       let anim_name = gltf_json.animations[i].name
       if (typeof anim_name == 'undefined' || anim_name == '') anim_name = 'animation_' + i
       let curr_animation = new Animation(anim_name)
-      console.log('processing animation: ' + anim_name)
 
       // 处理动画的所有通道（每个通道对应一个节点的一种变换）
       for (var k = 0; k < gltf_json.animations[i].channels.length; k++) {
@@ -505,7 +584,6 @@ export class AnimationParser {
 
         let node = gltf_json.nodes[channel.target.node]
         if (typeof node == 'undefined') {
-          console.warn('node is undefined for channel ' + k)
           continue
         }
 
@@ -612,24 +690,46 @@ export class AnimationParser {
 
   // 从URI异步解析动画集
   static async parseAnimationSetFromUri(glb_uri) {
-    let array_buffer = await this._getResourceAsync(glb_uri)
-    return this._parseAnimationSetFromArrayBuffer(array_buffer)
+    try {
+      let array_buffer = await this._getResourceAsync(glb_uri)
+      return this._parseAnimationSetFromArrayBuffer(array_buffer)
+    } catch (error) {
+      throw error
+    }
   }
 
-  // 从文件异步解析动画集
+  // 从文件异步解析动画集 - 改进：更好的错误处理
   static async parseAnimationSetFromFile(glb_file) {
-    let array_buffer = await this._readFileAsync(glb_file)
-    return this._parseAnimationSetFromArrayBuffer(array_buffer)
+    try {
+      // 验证输入
+      if (!glb_file) {
+        throw new Error('No file provided')
+      }
+
+      let array_buffer = await this._readFileAsync(glb_file)
+      return this._parseAnimationSetFromArrayBuffer(array_buffer)
+    } catch (error) {
+      throw error
+    }
   }
 
   // 从ArrayBuffer解析完整的动画集
   static _parseAnimationSetFromArrayBuffer(array_buffer) {
+    if (!array_buffer || !(array_buffer instanceof ArrayBuffer)) {
+      return new AnimationSet([], {})
+    }
+
     // 解析节点信息
     let animation_nodes = AnimationParser.parseAnimationNodesFromArrayBuffer(array_buffer)
 
     // 转换为字典格式
     let nodes_dict = {}
     for (var i = 0; i < animation_nodes.length; i++) {
+      // 确保节点有名称
+      if (!animation_nodes[i].name) {
+        animation_nodes[i].name = `node_${i}`
+      }
+
       nodes_dict[animation_nodes[i].name] = animation_nodes[i]
 
       // 处理矩阵形式的变换（glTF 2.0规范）
@@ -645,7 +745,7 @@ export class AnimationParser {
 
       if (typeof nodes_dict[animation_nodes[i].name].rotation === 'undefined') {
         nodes_dict[animation_nodes[i].name].rotation = [0, 0, 0, 1] // 单位四元数
-        nodes_dict[animation_nodes[i].name].inv_rotation_matrix = Cesium.Matrix3.IDENTITY
+        nodes_dict[animation_nodes[i].name].inv_rotation_matrix = Cesium.Matrix3.IDENTITY.clone()
         nodes_dict[animation_nodes[i].name].inv_rotation = new Cesium.Quaternion(0, 0, 0, 1)
       } else {
         // 计算并存储逆旋转矩阵和四元数（用于后续计算）
@@ -660,12 +760,11 @@ export class AnimationParser {
       }
 
       if (typeof nodes_dict[animation_nodes[i].name].scale === 'undefined')
-        nodes_dict[animation_nodes[i].name].scale = [0, 0, 0]
+        nodes_dict[animation_nodes[i].name].scale = [1, 1, 1] // 修复：应该是单位缩放而不是零缩放
     }
 
     // 解析动画数据
     let animations = AnimationParser.parseAnimationsFromArrayBuffer(array_buffer)
-    console.log(nodes_dict)
     return new AnimationSet(animations, nodes_dict)
   }
 }

@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-17 16:01:08
  * @LastEditors: dys
- * @LastEditTime: 2025-12-17 17:18:20
+ * @LastEditTime: 2025-12-18 09:53:31
  * @Descripttion:
 -->
 
@@ -21,7 +21,7 @@
 首先从 glTF 文件加载动画集。当前仅支持包含嵌入式资产数据的 .glb 格式。
 
 ```
-let animation_set = await AnimationParser.parseAnimationSetFromFile('../assets/my_model.glb');
+const animation_set = await AnimationParser.parseAnimationSetFromUri('data/gltf/Fox.glb')
 ```
 
 接下来实例化 AnimationPlayer，传入动画集、要动画化的 Cesium 实体以及所需的播放帧率。默认播放模式为 "clamp"，但也支持循环播放，如下所示。
