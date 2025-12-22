@@ -40,13 +40,13 @@ const list = ref([
     path: '/Weather',
   },
   {
-    id: 4,
+    id: 5,
     img: '/images/nav/ModelAnimationPlayer.jpg',
     text: 'glb动画播放器',
     path: '/ModelAnimationPlayer',
   },
   {
-    id: 4,
+    id: 6,
     img: '/images/nav/Weather.jpg',
     text: '轨迹漫游',
     path: '/Roaming',
