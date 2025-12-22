@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-18 15:56:00
  * @LastEditors: dys
- * @LastEditTime: 2025-12-22 16:10:15
+ * @LastEditTime: 2025-12-22 16:22:41
  * @Descripttion:
  */
 /**
@@ -372,16 +372,16 @@ export default class Roaming {
   /**
    *设置视角模式
    *
-   * @param {String} mode 视角模式: 'god'上帝视角, 'follow'跟随视角, 'side'侧方视角
+   * @param {String} mode 视角模式: 'up'上帝视角, 'follow'跟随视角, 'side'侧方视角
    * @memberof Roaming
    */
   setCameraMode(mode) {
-    if (mode === 'god') {
-      this.changingView(2) // 上方视角
+    if (mode === 'up') {
+      this.changingView('up') // 上方视角
     } else if (mode === 'follow') {
-      this.changingView(1) // 视角跟踪
+      this.changingView('follow') // 视角跟踪
     } else if (mode === 'side') {
-      this.changingView(3) // 侧方视角
+      this.changingView('side') // 侧方视角
     }
   }
 
@@ -429,14 +429,14 @@ export default class Roaming {
   changingView(value, options) {
     var options = options || {}
     this.viewer.trackedEntity = undefined
-    if (value == 1) {
+    if (value == 'follow') {
       this.viewer.trackedEntity = this.entity
-    } else if (value == 2) {
+    } else if (value == 'up') {
       this.viewer.zoomTo(
         this.viewer.entities,
-        new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-90)),
+        new Cesium.HeadingPitchRange(0, Cesium.Math.toRadians(-90), 8000),
       )
-    } else if (value == 3) {
+    } else if (value == 'side') {
       this.viewer.zoomTo(
         this.viewer.entities,
         new Cesium.HeadingPitchRange(Cesium.Math.toRadians(-90), Cesium.Math.toRadians(-15), 8000),

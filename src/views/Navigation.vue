@@ -47,7 +47,7 @@ const list = ref([
   },
   {
     id: 6,
-    img: '/images/nav/Weather.jpg',
+    img: '/images/nav/Roaming.jpg',
     text: '轨迹漫游',
     path: '/Roaming',
   },

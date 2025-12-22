@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-18 15:57:36
  * @LastEditors: dys
- * @LastEditTime: 2025-12-22 16:04:08
+ * @LastEditTime: 2025-12-22 16:19:30
  * @Descripttion: 
 -->
 <template>
@@ -164,9 +164,9 @@ const labelVisible = ref(true)
 const billboardVisible = ref(true)
 
 // 视角跟踪
-const cameraMode = ref('god')
+const cameraMode = ref('up')
 const cameraOptions = reactive([
-  { value: 'god', label: '上帝视角' },
+  { value: 'up', label: '上方视角' },
   { value: 'follow', label: '跟随视角' },
   { value: 'side', label: '侧方视角' },
 ])
@@ -374,7 +374,6 @@ watch(billboardVisible, (visible) => {
 })
 // 监听视角变化
 watch(cameraMode, (newMode) => {
-  console.log(newMode, '111111')
   if (roaming) {
     if (roaming.setCameraMode) {
       roaming.setCameraMode(newMode)
