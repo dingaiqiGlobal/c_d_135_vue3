@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-18 15:56:00
  * @LastEditors: dys
- * @LastEditTime: 2025-12-19 10:48:22
+ * @LastEditTime: 2025-12-22 16:10:15
  * @Descripttion:
  */
 /**
@@ -27,6 +27,7 @@ export default class Roaming {
     this.isPattern = true
     this.data = {}
     this.ifClockLoop = false
+    this.onLoopComplete = options.onLoopComplete || null //循环漫游的回调函数
   }
   /**
    *
@@ -48,14 +49,18 @@ export default class Roaming {
     this.viewer.clock.startTime = start.clone()
     this.viewer.clock.stopTime = stop.clone()
     this.viewer.clock.currentTime = start.clone()
-    if (this.ifClockLoop) {
-      this.viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP
-    } else {
-      this.viewer.clock.clockRange = Cesium.ClockRange.CLAMPED // 行为方式
-      this.viewer.clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK // 时钟设置为当前系统时间; 忽略所有其他设置。
-    }
+
+    // 设置时钟范围
+    this._updateClockRange()
+
     this.viewer.clock.shouldAnimate = true
     this.viewer.clock.multiplier = this.multiplier
+
+    // 添加时钟变化事件监听器用于循环检测
+    if (this.ifClockLoop) {
+      this._addClockListener()
+    }
+
     for (let i = 0; i < lineLength; i++) {
       var time = Cesium.JulianDate.addSeconds(
         start,
@@ -72,6 +77,55 @@ export default class Roaming {
       property.addSample(time, position)
     }
     return property
+  }
+
+  /**
+   * 更新时钟范围
+   * @private
+   */
+  _updateClockRange() {
+    if (this.ifClockLoop) {
+      this.viewer.clock.clockRange = Cesium.ClockRange.LOOP_STOP
+    } else {
+      this.viewer.clock.clockRange = Cesium.ClockRange.CLAMPED
+      this.viewer.clock.clockStep = Cesium.ClockStep.SYSTEM_CLOCK
+    }
+  }
+
+  /**
+   * 添加时钟监听器用于检测循环完成
+   * @private
+   */
+  _addClockListener() {
+    if (this.clockListener) {
+      this.viewer.clock.onTick.removeEventListener(this.clockListener)
+    }
+
+    this.clockListener = (clock) => {
+      if (this.ifClockLoop && this.onLoopComplete) {
+        // 检测是否到达循环结束时间
+        const currentTime = clock.currentTime
+        const stopTime = clock.stopTime
+
+        if (Cesium.JulianDate.equals(currentTime, stopTime)) {
+          // 触发循环完成回调
+          this.onLoopComplete()
+        }
+      }
+    }
+
+    this.viewer.clock.onTick.addEventListener(this.clockListener)
+  }
+
+  /**
+   * 移除时钟监听器
+   * @private
+   */
+  _removeClockListener() {
+    if (this.clockListener) {
+      this.viewer.clock.onTick.removeEventListener(this.clockListener)
+      this.clockListener = null
+    }
   }
   /**
    * @class DEUGlobe.Scene.Roaming.cameraRoaming
@@ -299,6 +353,7 @@ export default class Roaming {
   PauseOrContinue(state) {
     this.viewer.clock.shouldAnimate = state
   }
+
   /**
    *改变飞行的速度
    *
@@ -308,6 +363,28 @@ export default class Roaming {
   ChangeRoamingSpeed(value) {
     this.viewer.clock.multiplier = value
   }
+
+  // 添加setSpeed方法以兼容前端调用
+  setSpeed(value) {
+    this.ChangeRoamingSpeed(value)
+  }
+
+  /**
+   *设置视角模式
+   *
+   * @param {String} mode 视角模式: 'god'上帝视角, 'follow'跟随视角, 'side'侧方视角
+   * @memberof Roaming
+   */
+  setCameraMode(mode) {
+    if (mode === 'god') {
+      this.changingView(2) // 上方视角
+    } else if (mode === 'follow') {
+      this.changingView(1) // 视角跟踪
+    } else if (mode === 'side') {
+      this.changingView(3) // 侧方视角
+    }
+  }
+
   /**
    *
    *取消漫游
@@ -322,6 +399,8 @@ export default class Roaming {
       this.polyline = undefined
       this.cylinder = undefined
       this.PauseOrContinue(false)
+      // 移除时钟监听器
+      this._removeClockListener()
     }
   }
   /**
@@ -340,7 +419,7 @@ export default class Roaming {
   }
   /**
    *切换视角
-   * @memberof Roaming、
+   * @memberof Roaming
    * @param {Boolean} value   1视角跟踪 2上方视角 3侧方视角 4自定义视角
    * @param {Object} options 参数 自定义视角 模式时才有效
    * @param {Object} options.heading 可选 航向角（弧度）默认 0
@@ -452,5 +531,109 @@ export default class Roaming {
     secondTime = secondTime.toString() == 0 ? '' : secondTime.toString() + '秒'
     result = `${h + min + secondTime}`
     return result == '' ? '0秒' : result
+  }
+  setLoopEnabled() {}
+
+  /**
+   * 漫游轨迹可见性控制
+   * @param {Boolean} visible 是否显示轨迹
+   * @memberof Roaming
+   */
+  setPathVisible(visible) {
+    if (this.entity && this.modelData) {
+      // 控制entity的path可见性
+      this.entity.path.show = visible
+      // 控制折线可见性
+      if (this.polyline) {
+        this.polyline.show = visible
+      }
+      // 更新modelData中的配置，以便后续使用
+      this.modelData.path.show = visible
+      if (this.modelData.polyline) {
+        this.modelData.polyline.show = visible
+      }
+    }
+  }
+
+  /**
+   * 标签可见性控制
+   * @param {Boolean} visible 是否显示标签
+   * @memberof Roaming
+   */
+  setLabelVisible(visible) {
+    if (this.entity && this.modelData) {
+      // 控制entity的label可见性
+      this.entity.label.show = visible
+      // 更新modelData中的配置
+      this.modelData.label.show = visible
+    }
+  }
+
+  /**
+   * Billboard可见性控制
+   * @param {Boolean} visible 是否显示Billboard
+   * @memberof Roaming
+   */
+  setBillboardVisible(visible) {
+    if (this.entity && this.modelData) {
+      // 控制entity的billboard可见性
+      this.entity.billboard.show = visible
+      // 更新modelData中的配置
+      this.modelData.billboard.show = visible
+    }
+  }
+
+  /**
+   * 漫游轨迹可见性 - 兼容旧版本的方法名
+   * @param {Boolean} visible 是否显示轨迹
+   * @memberof Roaming
+   */
+  isShowPath(visible) {
+    this.setPathVisible(visible)
+  }
+
+  /**
+   * 标签可见性 - 兼容旧版本的方法名
+   * @param {Boolean} visible 是否显示标签
+   * @memberof Roaming
+   */
+  isShowLabel(visible) {
+    this.setLabelVisible(visible)
+  }
+
+  /**
+   * Billboard可见性 - 兼容旧版本的方法名
+   * @param {Boolean} visible 是否显示Billboard
+   * @memberof Roaming
+   */
+  isShowBillboard(visible) {
+    this.setBillboardVisible(visible)
+  }
+
+  /**
+   * 获取当前轨迹可见性状态
+   * @returns {Boolean} 轨迹是否可见
+   * @memberof Roaming
+   */
+  getTrajectoryVisible() {
+    return this.entity ? this.entity.path.show : false
+  }
+
+  /**
+   * 获取当前标签可见性状态
+   * @returns {Boolean} 标签是否可见
+   * @memberof Roaming
+   */
+  getLabelVisible() {
+    return this.entity ? this.entity.label.show : false
+  }
+
+  /**
+   * 获取当前Billboard可见性状态
+   * @returns {Boolean} Billboard是否可见
+   * @memberof Roaming
+   */
+  getBillboardVisible() {
+    return this.entity ? this.entity.billboard.show : false
   }
 }

@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-18 15:57:36
  * @LastEditors: dys
- * @LastEditTime: 2025-12-22 10:20:07
+ * @LastEditTime: 2025-12-22 16:04:08
  * @Descripttion: 
 -->
 <template>
@@ -11,11 +11,6 @@
       <template #header>
         <div class="card-header">
           <span>漫游控制面板</span>
-          <el-button type="text" @click="toggleCollapse" class="collapse-btn">
-            <el-icon>
-              <component :is="isCollapsed ? 'ArrowDown' : 'ArrowUp'" />
-            </el-icon>
-          </el-button>
         </div>
       </template>
 
@@ -25,35 +20,32 @@
         <div class="control-row">
           <el-button-group>
             <el-button
-              :type="roamState === 'playing' ? 'primary' : ''"
+              :type="buttonStates.start.type"
               @click="startRoaming"
-              :disabled="roamState === 'playing'"
+              :disabled="buttonStates.start.disabled"
             >
-              <el-icon><VideoPlay /></el-icon>
               开始
             </el-button>
             <el-button
-              :type="roamState === 'stopped' ? 'primary' : ''"
+              :type="buttonStates.stop.type"
               @click="stopRoaming"
-              :disabled="roamState === 'stopped'"
+              :disabled="buttonStates.stop.disabled"
             >
-              <el-icon><VideoPause /></el-icon>
               停止
             </el-button>
             <el-button
-              :type="roamState === 'paused' ? 'primary' : ''"
+              :type="buttonStates.pause.type"
               @click="pauseRoaming"
-              :disabled="roamState === 'paused'"
+              :disabled="buttonStates.pause.disabled"
             >
-              <el-icon><Refresh /></el-icon>
-              暂停
+              {{ buttonStates.pause.text }}
             </el-button>
           </el-button-group>
         </div>
       </div>
 
       <!-- 第二行：漫游时间 -->
-      <div class="control-section" v-if="!isCollapsed">
+      <div class="control-section">
         <div class="section-title">漫游总时长</div>
         <div class="control-row">
           <el-input v-model="totalDuration" placeholder="请输入总时长（秒）" style="width: 180px">
@@ -63,7 +55,7 @@
       </div>
 
       <!-- 第三行：模型选择 -->
-      <div class="control-section" v-if="!isCollapsed">
+      <div class="control-section">
         <div class="section-title">模型选择</div>
         <div class="control-row">
           <el-select
@@ -83,7 +75,7 @@
       </div>
 
       <!-- 第四行：速率控制 -->
-      <div class="control-section" v-if="!isCollapsed">
+      <div class="control-section">
         <div class="section-title">漫游速率</div>
         <div class="control-row">
           <el-input-number
@@ -94,20 +86,11 @@
             controls-position="right"
             style="width: 120px"
           />
-          <div class="speed-control">
-            <el-button @click="decreaseSpeed" circle>
-              <el-icon><Minus /></el-icon>
-            </el-button>
-            <span class="speed-value">{{ roamSpeed }}x</span>
-            <el-button @click="increaseSpeed" circle>
-              <el-icon><Plus /></el-icon>
-            </el-button>
-          </div>
         </div>
       </div>
 
       <!-- 第五行：循环漫游 -->
-      <div class="control-section" v-if="!isCollapsed">
+      <div class="control-section">
         <div class="section-title">漫游设置</div>
         <div class="control-row checkbox-row">
           <el-checkbox v-model="loopEnabled">循环漫游</el-checkbox>
@@ -115,28 +98,28 @@
       </div>
 
       <!-- 第六行：漫游轨迹可见性 -->
-      <div class="control-section" v-if="!isCollapsed">
+      <div class="control-section">
         <div class="control-row checkbox-row">
-          <el-checkbox v-model="trajectoryVisible">漫游轨迹可见</el-checkbox>
+          <el-checkbox v-model="pathVisible">漫游轨迹可见</el-checkbox>
         </div>
       </div>
 
       <!-- 第七行：标注可见性 -->
-      <div class="control-section" v-if="!isCollapsed">
+      <div class="control-section">
         <div class="control-row checkbox-row">
-          <el-checkbox v-model="markersVisible">标注可见</el-checkbox>
+          <el-checkbox v-model="labelVisible">标注可见</el-checkbox>
         </div>
       </div>
 
       <!-- 第八行：弹框可见性 -->
-      <div class="control-section" v-if="!isCollapsed">
+      <div class="control-section">
         <div class="control-row checkbox-row">
-          <el-checkbox v-model="popupsVisible">弹框可见</el-checkbox>
+          <el-checkbox v-model="billboardVisible">弹框可见</el-checkbox>
         </div>
       </div>
 
       <!-- 第九行：视角跟踪 -->
-      <div class="control-section" v-if="!isCollapsed">
+      <div class="control-section">
         <div class="section-title">视角跟踪</div>
         <div class="control-row">
           <el-select v-model="cameraMode" placeholder="请选择视角" style="width: 100%">
@@ -153,137 +136,257 @@
     </el-card>
   </div>
 </template>
-
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import {
-  VideoPlay,
-  VideoPause,
-  Refresh,
-  Plus,
-  Minus,
-  Position,
-  Camera,
-  View,
-} from '@element-plus/icons-vue'
+import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue'
 import * as Cesium from 'cesium'
 import { formatTimeLine } from './js/TimeLine'
 import Roaming from './js/Roaming'
-
+import dronePopup from '@/assets/img/billboardIMG/dronePopup.png'
 /**
  * UI
  */
-// 漫游状态
-const roamState = ref('stopped') // playing, paused, stopped
-
+// 漫游状态 - 使用更具语义化的状态
+const roamState = ref('idle') // idle: 未开始, playing: 播放中, paused: 已暂停, stopped: 已停止
 // 时间设置
-const totalDuration = ref(60) // 总时长，单位秒
-
+const totalDuration = ref(10)
 // 模型选择
-const selectedModel = ref('')
+const selectedModel = ref('data/gltf/CesiumDrone.glb')
 const modelOptions = reactive([
-  { value: 'model1', label: '模型一' },
-  { value: 'model2', label: '模型二' },
-  { value: 'model3', label: '模型三' },
-  { value: 'model4', label: '模型四' },
-  { value: 'model5', label: '模型五' },
+  { value: 'data/gltf/CesiumDrone.glb', label: '无人机' },
+  { value: 'data/gltf/Cesium_Air.glb', label: '客机' },
 ])
-
 // 速率控制
 const roamSpeed = ref(1.0)
-
 // 复选框选项
-const loopEnabled = ref(false)
-const trajectoryVisible = ref(true)
-const markersVisible = ref(true)
-const popupsVisible = ref(true)
+const loopEnabled = ref(true)
+const pathVisible = ref(true)
+const labelVisible = ref(true)
+const billboardVisible = ref(true)
 
 // 视角跟踪
 const cameraMode = ref('god')
 const cameraOptions = reactive([
-  { value: 'god', label: '上帝视角', icon: Position },
-  { value: 'follow', label: '跟随视角', icon: Camera },
-  { value: 'side', label: '侧方视角', icon: View },
+  { value: 'god', label: '上帝视角' },
+  { value: 'follow', label: '跟随视角' },
+  { value: 'side', label: '侧方视角' },
 ])
 
-// 面板折叠状态
-const isCollapsed = ref(false)
+// 计算属性：按钮的禁用状态
+const buttonStates = computed(() => ({
+  start: {
+    disabled: roamState.value === 'playing' || roamState.value === 'paused',
+    type: roamState.value === 'idle' || roamState.value === 'stopped' ? 'primary' : '',
+  },
+  stop: {
+    disabled: roamState.value === 'stopped' || roamState.value === 'idle',
+    type: roamState.value === 'stopped' ? 'primary' : '',
+  },
+  pause: {
+    disabled: roamState.value === 'idle' || roamState.value === 'stopped',
+    type: roamState.value === 'paused' ? 'primary' : '',
+    text: roamState.value === 'paused' ? '继续' : '暂停',
+  },
+}))
+
+// 漫游实例和参数
+let roaming = null
+const roamingParams = reactive({
+  lines: [],
+  isInitialized: false,
+})
+
+// 初始化漫游路径
+const initRoamingPath = () => {
+  const lineGeo = [
+    { lng: 116.38523, lat: 39.92144, height: 0 },
+    { lng: 116.38583, lat: 39.91138, height: 100 },
+    { lng: 116.39641, lat: 39.91181, height: 200 },
+    { lng: 116.39579, lat: 39.92188, height: 0 },
+  ]
+
+  roamingParams.lines = lineGeo.map((item) => {
+    return Cesium.Cartesian3.fromDegrees(item.lng, item.lat, item.height)
+  })
+
+  // 初始化漫游实例
+  if (viewer && !roaming) {
+    roaming = new Roaming(viewer, {
+      time: totalDuration.value,
+      onComplete: handleRoamingComplete,
+    })
+    roamingParams.isInitialized = true
+  }
+}
 
 // 事件处理函数
 const startRoaming = () => {
-  roamState.value = 'playing'
-  console.log('开始漫游', getCurrentConfig())
+  if (!roamingParams.isInitialized) {
+    initRoamingPath()
+  }
+  if (roamState.value === 'stopped' || roamState.value === 'idle') {
+    const config = {
+      model: {
+        uri: selectedModel.value,
+        scale: 20,
+      },
+      Lines: roamingParams.lines,
+      path: {
+        show: pathVisible.value,
+      },
+      label: {
+        show: true,
+        text: 'G-B',
+      },
+      billboard: {
+        show: true,
+        image: dronePopup,
+        scale: 0.5,
+        pixelOffset: new Cesium.Cartesian2(-100, -100),
+      },
+      speed: roamSpeed.value,
+      ifClockLoop: loopEnabled.value,
+    }
+
+    // 开始漫游
+    roaming.modelRoaming(config)
+    roamState.value = 'playing'
+  }
 }
 
 const stopRoaming = () => {
-  roamState.value = 'stopped'
-  console.log('停止漫游')
+  if (roaming && roamingParams.isInitialized) {
+    roaming.EndRoaming()
+    roamState.value = 'stopped'
+  }
 }
 
 const pauseRoaming = () => {
-  roamState.value = 'paused'
-  console.log('暂停漫游')
+  if (!roaming || !roamingParams.isInitialized) {
+    return
+  }
+
+  if (roamState.value === 'playing') {
+    // 暂停漫游
+    if (roaming.PauseOrContinue) {
+      roaming.PauseOrContinue(false)
+    }
+    roamState.value = 'paused'
+  } else if (roamState.value === 'paused') {
+    // 继续漫游
+    if (roaming.PauseOrContinue) {
+      roaming.PauseOrContinue(true)
+    }
+    roamState.value = 'playing'
+  }
 }
 
+// 监听模型变化
+watch(selectedModel, (newModel) => {
+  if (roaming && (roamState.value === 'playing' || roamState.value === 'paused')) {
+    // 提示用户模型更改需要重新开始
+    const shouldRestart = confirm('更改模型需要重新开始漫游，是否继续？')
+    if (shouldRestart) {
+      stopRoaming()
+      setTimeout(() => {
+        startRoaming()
+      }, 100)
+    } else {
+      // 如果用户取消，恢复原来的模型
+      const index = modelOptions.findIndex((option) => option.value === newModel)
+      if (index > -1) {
+        selectedModel.value = modelOptions[index].value
+      }
+    }
+  }
+})
+
+// 速率控制
 const increaseSpeed = () => {
   if (roamSpeed.value < 10) {
     roamSpeed.value = Math.round((roamSpeed.value + 0.1) * 10) / 10
+    updateRoamingSpeed()
   }
 }
 
 const decreaseSpeed = () => {
   if (roamSpeed.value > 0.1) {
     roamSpeed.value = Math.round((roamSpeed.value - 0.1) * 10) / 10
+    updateRoamingSpeed()
   }
 }
 
-const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value
+// 更新漫游速度
+const updateRoamingSpeed = () => {
+  if (roaming && (roamState.value === 'playing' || roamState.value === 'paused')) {
+    if (roaming.setSpeed) {
+      roaming.setSpeed(roamSpeed.value)
+    }
+  }
 }
+
+// 监听速率变化
+watch(roamSpeed, (newValue) => {
+  if (roaming && (roamState.value === 'playing' || roamState.value === 'paused')) {
+    if (roaming.setSpeed) {
+      roaming.setSpeed(newValue)
+    }
+  }
+})
+
+// 漫游完成回调
+const handleRoamingComplete = () => {
+  if (loopEnabled.value) {
+    // 如果启用循环，重新开始漫游
+    setTimeout(() => {
+      roamState.value = 'stopped' // 先重置状态
+      startRoaming()
+    }, 500)
+  } else {
+    // 否则停止漫游
+    roamState.value = 'stopped'
+  }
+}
+
+// 监听轨迹可见性
+watch(pathVisible, (visible) => {
+  if (roaming) {
+    if (roaming.setPathVisible) {
+      roaming.setPathVisible(visible)
+    }
+  }
+})
+// 标签可见性
+watch(labelVisible, (visible) => {
+  if (roaming) {
+    if (roaming.setLabelVisible) {
+      roaming.setLabelVisible(visible)
+    }
+  }
+})
+
+// billboard可见性
+watch(billboardVisible, (visible) => {
+  if (roaming) {
+    if (roaming.setBillboardVisible) {
+      roaming.setBillboardVisible(visible)
+    }
+  }
+})
+// 监听视角变化
+watch(cameraMode, (newMode) => {
+  console.log(newMode, '111111')
+  if (roaming) {
+    if (roaming.setCameraMode) {
+      roaming.setCameraMode(newMode)
+    }
+  }
+})
 
 /**
  * Map
  */
 const props = defineProps(['viewer'])
 let viewer = props.viewer
-
-const result = reactive([
-  { lng: 116.38523, lat: 39.92144, height: 0 },
-  { lng: 116.38583, lat: 39.91138, height: 100 },
-  { lng: 116.39641, lat: 39.91181, height: 200 },
-  { lng: 116.39579, lat: 39.92188, height: 0 },
-])
-
-const addLayer = (viewer) => {
-  //线图层
-  const positions = result.flatMap((item) => [item.lng, item.lat, item.height])
-  const entity = new Cesium.Entity({
-    Type: `roamGirdPolygon`,
-    polyline: {
-      positions: Cesium.Cartesian3.fromDegreesArrayHeights(positions),
-      width: 2,
-      material: Cesium.Color.fromCssColorString('rgba(78, 143, 252, 1)'),
-      disableDepthTestDistance: 50000,
-    },
-  })
-  viewer.entities.add(entity)
-
-  //漫游
-  const lonlat = result.map((item) => {
-    return Cesium.Cartesian3.fromDegrees(item.lng, item.lat, item.height)
-  })
-  const roaming = new Roaming(viewer, { time: totalDuration.value })
-  roaming.modelRoaming({
-    model: {
-      uri: 'data/gltf/CesiumDrone.glb',
-      scale: 20,
-    },
-    Lines: lonlat,
-    path: {
-      show: false,
-    },
-  })
-}
 
 onMounted(() => {
   /**
@@ -293,11 +396,17 @@ onMounted(() => {
     viewer.animation.container.style.visibility = 'visible'
     viewer.timeline.container.style.visibility = 'visible'
     formatTimeLine(viewer)
-    // addLayer(viewer)
+
+    // 初始化漫游路径
+    initRoamingPath()
+  }
+})
+onUnmounted(() => {
+  if (roaming) {
+    stopRoaming()
   }
 })
 </script>
-
 <style scoped>
 .roam-control-panel {
   position: fixed;
