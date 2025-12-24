@@ -139,7 +139,7 @@
 <script setup>
 import { ref, reactive, onMounted, onUnmounted, watch, computed } from 'vue'
 import * as Cesium from 'cesium'
-import { formatTimeLine } from './js/TimeLine'
+import { formatTimeLine } from '@/utils/TimeLine'
 import Roaming from './js/Roaming'
 import dronePopup from '@/assets/img/billboardIMG/dronePopup.png'
 /**
