@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-26 09:49:27
  * @LastEditors: dys
- * @LastEditTime: 2025-12-26 10:23:00
+ * @LastEditTime: 2025-12-26 10:31:35
  * @Descripttion: 
 -->
 <template></template>
@@ -21,6 +21,7 @@ import negy from '../../assets/img/skybox/negy.jpg'
 const props = defineProps(['viewer'])
 let viewer = props.viewer
 
+//动态天空盒
 const initSkyBox = () => {
   viewer.scene.skyBox = new SkyBox({
     speed: 0.05,

@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-09-08 13:42:41
  * @LastEditors: dys
- * @LastEditTime: 2025-12-26 10:27:47
+ * @LastEditTime: 2025-12-26 13:16:15
  * @Descripttion:
  */
 import * as Cesium from 'cesium'
@@ -41,21 +41,31 @@ let ViewInit = {
         },
       },
     })
+    /**
+     * 基础设置
+     */
     this.viewer._cesiumWidget._creditContainer.style.display = 'none' //版权信息
     this.viewer.animation.container.style.visibility = 'hidden' // 不显示动画控件
     this.viewer.timeline.container.style.visibility = 'hidden' // 不显示时间控件
+    this.viewer.scene.debugShowFramesPerSecond = true //帧率
     this.viewer.resolutionScale = 1.0 //分辨率
     this.viewer.scene.msaaSamples = 4 //MSAA样本
+    /**
+     * 场景设置
+     */
     this.viewer.postProcessStages.fxaa.enabled = true //后期处理-抗锯齿
     this.viewer.scene.globe.depthTestAgainstTerrain = true //深度检测
-    this.viewer.scene.debugShowFramesPerSecond = true //帧率
+    this.viewer.scene.globe.enableLighting = false //场景光
+    this.viewer.shadows = false //阴影
 
-    this.viewer.scene.globe.enableLighting = false //隐藏太阳
-    this.viewer.shadows = false
-    this.viewer.scene.sun.show = false //还可以viewer.scene.sun.destroy();
+    this.viewer.scene.sun.show = false //太阳;
     this.viewer.scene.moon.show = false //月亮
     this.viewer.scene.skyAtmosphere.show = false //大气
+    this.viewer.scene.globe.showGroundAtmosphere = false //地面大气
     this.viewer.scene.fog.enable = false //雾
+
+    this.viewer.scene.undergroundMode = false //地下模式
+    this.viewer.scene.terrainProvider.isCreateSkirt = false
 
     /**
      * 屏幕坐标控制
