@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-09 09:31:51
  * @LastEditors: dys
- * @LastEditTime: 2025-12-18 16:20:23
+ * @LastEditTime: 2025-12-26 09:52:41
  * @Descripttion:
  */
 import { createRouter, createWebHistory } from 'vue-router'
@@ -56,6 +56,14 @@ const router = createRouter({
       component: () => import('@/components/Roaming/index.vue'),
       meta: {
         title: '轨迹漫游',
+      },
+    },
+    {
+      name: 'NightCity',
+      path: '/NightCity',
+      component: () => import('@/components/NightCity/index.vue'),
+      meta: {
+        title: '夜景城市',
       },
     },
   ],

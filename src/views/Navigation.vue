@@ -51,6 +51,12 @@ const list = ref([
     text: '轨迹漫游',
     path: '/Roaming',
   },
+  {
+    id: 7,
+    img: '/images/nav/Roaming.jpg',
+    text: '夜景城市',
+    path: '/NightCity',
+  },
 ])
 
 // 方法
