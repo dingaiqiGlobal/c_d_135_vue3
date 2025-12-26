@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-26 09:49:08
  * @LastEditors: dys
- * @LastEditTime: 2025-12-26 09:54:33
+ * @LastEditTime: 2025-12-26 14:16:36
  * @Descripttion: 
 -->
 <template>
@@ -23,7 +23,12 @@ onMounted(() => {
   ViewInit.init()
   viewer.value = ViewInit.viewer
   viewer.value.camera.setView({
-    destination: Cesium.Cartesian3.fromDegrees(116.3906, 39.9177, 3000.0),
+    destination: Cesium.Cartesian3.fromDegrees(113.36014084147262, 23.10896926740387, 2000.0),
+    orientation: {
+      heading: Cesium.Math.toRadians(293.6635524369704),
+      pitch: Cesium.Math.toRadians(-22.617957999782014),
+      roll: Cesium.Math.toRadians(0.0013787893420239103),
+    },
   })
 })
 </script>
