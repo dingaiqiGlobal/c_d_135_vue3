@@ -57,6 +57,12 @@ const list = ref([
     text: '3dtiles Shader',
     path: '/CustomShader',
   },
+  {
+    id: 8,
+    img: '/images/nav/LoadGeoJson.jpg',
+    text: 'LoadGeoJson',
+    path: '/LoadGeoJson',
+  },
 ])
 
 // 方法

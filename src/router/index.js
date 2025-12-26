@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-09 09:31:51
  * @LastEditors: dys
- * @LastEditTime: 2025-12-26 16:03:45
+ * @LastEditTime: 2025-12-26 16:18:25
  * @Descripttion:
  */
 import { createRouter, createWebHistory } from 'vue-router'
@@ -64,6 +64,14 @@ const router = createRouter({
       component: () => import('@/components/CustomShader/index.vue'),
       meta: {
         title: '自定义shader',
+      },
+    },
+    {
+      name: 'LoadGeoJson',
+      path: '/LoadGeoJson',
+      component: () => import('@/components/LoadGeoJson/index.vue'),
+      meta: {
+        title: 'Geojson加载方式',
       },
     },
   ],
