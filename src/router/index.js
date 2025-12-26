@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-12-09 09:31:51
  * @LastEditors: dys
- * @LastEditTime: 2025-12-26 09:52:41
+ * @LastEditTime: 2025-12-26 16:03:45
  * @Descripttion:
  */
 import { createRouter, createWebHistory } from 'vue-router'
@@ -59,11 +59,11 @@ const router = createRouter({
       },
     },
     {
-      name: 'NightCity',
-      path: '/NightCity',
-      component: () => import('@/components/NightCity/index.vue'),
+      name: 'CustomShader',
+      path: '/CustomShader',
+      component: () => import('@/components/CustomShader/index.vue'),
       meta: {
-        title: '夜景城市',
+        title: '自定义shader',
       },
     },
   ],

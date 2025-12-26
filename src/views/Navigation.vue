@@ -53,9 +53,9 @@ const list = ref([
   },
   {
     id: 7,
-    img: '/images/nav/Roaming.jpg',
-    text: '夜景城市',
-    path: '/NightCity',
+    img: '/images/nav/CustomShader.jpg',
+    text: '3dtiles Shader',
+    path: '/CustomShader',
   },
 ])
 
