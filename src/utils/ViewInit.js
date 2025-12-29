@@ -2,7 +2,7 @@
  * @Author: dys
  * @Date: 2025-09-08 13:42:41
  * @LastEditors: dys
- * @LastEditTime: 2025-12-26 13:16:15
+ * @LastEditTime: 2025-12-29 16:07:36
  * @Descripttion:
  */
 import * as Cesium from 'cesium'
@@ -40,6 +40,8 @@ let ViewInit = {
           failIfMajorPerformanceCaveat: false, //警告
         },
       },
+      //requestRenderMode: true, //显示渲染模式-慎用
+      //maximumRenderTimeChange: Infinity, //最大渲染时间更改与requestRenderMode成对出现
     })
     /**
      * 基础设置
@@ -66,6 +68,31 @@ let ViewInit = {
 
     this.viewer.scene.undergroundMode = false //地下模式
     this.viewer.scene.terrainProvider.isCreateSkirt = false
+
+    /**
+     * 地形
+     */
+    // const terrainProvider = new Cesium.CesiumTerrainProvider({
+    //   requestWaterMask: false, //请求水体效果所需要的海岸线数据
+    //   requestVertexNormals: false, //请求地形照明数据
+    // })
+    // this.viewer.terrainProvider = terrainProvider
+
+    /**
+     * 瓦片预加载和缓存策略
+     */
+    // 方案1：使用Cesium内置的预加载
+    this.viewer.scene.globe.tileLoadProgressEvent.addEventListener(function (pendingRequests) {
+      // pendingRequests 是待加载的瓦片数量
+      if (pendingRequests === 0) {
+        console.log('瓦片全部加载了')
+      }
+    })
+
+    // 方案2：调整预加载参数
+    // this.viewer.scene.globe.baseColor = Cesium.Color.TRANSPARENT // 让未加载瓦片透明
+    // this.viewer.scene.globe.preloadAncestors = true // 预加载父级瓦片
+    // this.viewer.scene.globe.preloadSiblings = true // 预加载兄弟瓦片
 
     /**
      * 屏幕坐标控制
