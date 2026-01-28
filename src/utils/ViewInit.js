@@ -56,7 +56,7 @@ let ViewInit = {
      * 场景设置
      */
     this.viewer.postProcessStages.fxaa.enabled = true //后期处理-抗锯齿
-    this.viewer.scene.globe.depthTestAgainstTerrain = true //深度检测
+    this.viewer.scene.globe.depthTestAgainstTerrain = false //深度检测
     this.viewer.scene.globe.enableLighting = false //场景光
     this.viewer.shadows = false //阴影
 
@@ -82,12 +82,12 @@ let ViewInit = {
      * 瓦片预加载和缓存策略
      */
     // 方案1：使用Cesium内置的预加载
-    this.viewer.scene.globe.tileLoadProgressEvent.addEventListener(function (pendingRequests) {
-      // pendingRequests 是待加载的瓦片数量
-      if (pendingRequests === 0) {
-        console.log('瓦片全部加载了')
-      }
-    })
+    // this.viewer.scene.globe.tileLoadProgressEvent.addEventListener(function (pendingRequests) {
+    //   // pendingRequests 是待加载的瓦片数量
+    //   if (pendingRequests === 0) {
+    //     console.log('瓦片全部加载了')
+    //   }
+    // })
 
     // 方案2：调整预加载参数
     // this.viewer.scene.globe.baseColor = Cesium.Color.TRANSPARENT // 让未加载瓦片透明

@@ -63,6 +63,12 @@ const list = ref([
     text: 'LoadGeoJson',
     path: '/LoadGeoJson',
   },
+  {
+    id: 9,
+    img: '/images/nav/LoadGeoJson.jpg',
+    text: 'Water',
+    path: '/Water',
+  },
 ])
 
 // 方法
