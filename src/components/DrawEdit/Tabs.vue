@@ -2,11 +2,7 @@
 <template>
   <div class="list-content" :class="{ 'is-auto-height': isAutoHeightTab }">
     <div class="list-body" :class="{ 'is-auto-height': isAutoHeightTab }">
-      <el-tabs
-        v-model="activeName"
-        class="draw-edit-tabs"
-        @tab-click="handleClick"
-      >
+      <el-tabs v-model="activeName" class="draw-edit-tabs" @tab-click="handleClick">
         <el-tab-pane label="点" name="drawPoint"></el-tab-pane>
         <el-tab-pane label="线" name="drawPolyline"></el-tab-pane>
         <el-tab-pane label="多边形" name="drawPolygon"></el-tab-pane>
@@ -154,7 +150,8 @@ const mapPlotting = (name) => {
     }
 
     :deep(.draw-edit-tabs .el-tabs__nav-wrap) {
-      padding: 0 8px;
+      padding: 0;
+      flex: 1;
     }
 
     :deep(.draw-edit-tabs .el-tabs__nav-wrap::after) {
@@ -164,10 +161,23 @@ const mapPlotting = (name) => {
     :deep(.draw-edit-tabs .el-tabs__item) {
       color: rgba(255, 255, 255, 0.45);
       font-size: 14px;
-      padding: 0 18px;
+      padding: 0;
       height: 44px;
       line-height: 44px;
       border: none;
+      flex: 1 0 0;
+      text-align: center;
+    }
+
+    // 让 5 个 tab 平均占满宽度（覆盖 element-plus 默认的滚动/固定宽行为）
+    :deep(.draw-edit-tabs .el-tabs__nav) {
+      width: 100%;
+      display: flex;
+    }
+
+    :deep(.draw-edit-tabs .el-tabs__nav-scroll) {
+      width: 100%;
+      display: flex;
     }
 
     :deep(.draw-edit-tabs .el-tabs__item:hover) {
