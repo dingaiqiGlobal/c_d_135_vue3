@@ -6,15 +6,15 @@
  * @Descripttion: 
 -->
 <template>
-  <div>
+  <div class="draw-edit-root">
     <div id="cesiumContainer"></div>
-    <Panel />
+    <Tabs />
   </div>
 </template>
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import * as Cesium from 'cesium'
-import Panel from './Panel.vue'
+import Tabs from './Tabs.vue'
 import ViewInit from '@/utils/ViewInit'
 
 let viewer = ref(null)
@@ -27,4 +27,15 @@ onMounted(() => {
   })
 })
 </script>
-<style lang="less" scoped></style>
+<style lang="less" scoped>
+.draw-edit-root {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 150px);
+}
+
+#cesiumContainer {
+  width: 100%;
+  height: 100%;
+}
+</style>
