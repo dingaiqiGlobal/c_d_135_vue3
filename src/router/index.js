@@ -82,6 +82,14 @@ const router = createRouter({
         title: 'Water效果集合',
       },
     },
+    {
+      name: 'BaseMap',
+      path: '/BaseMap',
+      component: () => import('@/components/BaseMap/index.vue'),
+      meta: {
+        title: '底图切换',
+      },
+    },
   ],
 })
 

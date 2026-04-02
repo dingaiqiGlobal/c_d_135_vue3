@@ -69,6 +69,12 @@ const list = ref([
     text: 'Water',
     path: '/Water',
   },
+  {
+    id: 10,
+    img: '/images/nav/BaseMap.jpg',
+    text: 'BaseMap',
+    path: '/BaseMap',
+  },
 ])
 
 // 方法
