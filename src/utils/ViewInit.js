@@ -11,6 +11,8 @@ let ViewInit = {
   popup: null, //弹框
   viewer: null,
   init() {
+    Cesium.Ion.defaultAccessToken =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI0ZjI1YWYwNS00ODJiLTQzOTYtYTA3My0zMzI3ODFiZTdkYzAiLCJpZCI6MjAzOTgsInNjb3BlcyI6WyJhc3IiLCJnYyJdLCJpYXQiOjE1NzczNDAzMjN9.s1TyB5DYncqM_xAF-ekua_P4fcZmmyeVR4hA9ec9G4Q'
     this.viewer = new Cesium.Viewer('cesiumContainer', {
       // scene3DOnly:true,//当 true 时，每个几何实例将仅以 3D 呈现以节省 GPU 内存。
       homeButton: false, // 是否显示home控件
